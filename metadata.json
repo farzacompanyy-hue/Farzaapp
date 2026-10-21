@@ -1,0 +1,6 @@
+{
+  "name": "FARZA (فَرْزَة) - منصة النقل بين المدن اليمنية",
+  "description": "تطبيق ومقدمة تفاعلية احترافية لمنصة فَرْزَة لنقل الركاب وحجز مقاعد السفر بين المدن في اليمن بهوية بصرية مميزة وسيارة هايلكس سوداء.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

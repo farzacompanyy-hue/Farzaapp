@@ -1,0 +1,53 @@
+{
+  "id": "/",
+  "name": "FARZA فَرْزَة - منصة النقل وحجز مقاعد السفر",
+  "short_name": "فَرْزَة FARZA",
+  "description": "منصة رقمية لحجز مقاعد السفر والتنقل بين المدن في اليمن بسيارات هايلكس حديثة ومكيفة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#FFFFFF",
+  "theme_color": "#245BDB",
+  "categories": ["travel", "transportation", "lifestyle"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "حجز مقاعد الراكب",
+      "short_name": "حجز مقعد",
+      "description": "البحث عن رحلات السفر المتاحة وحجز المقاعد",
+      "url": "/?role=passenger",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "إدارة رحلات السائق",
+      "short_name": "لوحة السائق",
+      "description": "إضافة رحلة جديدة وإدارة طلبات الركاب والعمولة",
+      "url": "/?role=driver",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
