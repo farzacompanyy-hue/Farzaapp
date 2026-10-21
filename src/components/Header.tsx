@@ -1,6 +1,6 @@
 import React from 'react';
 import { FarzaLogo } from './FarzaLogo';
-import { Play, PhoneCall, Smartphone, Shield } from 'lucide-react';
+import { Play, PhoneCall, Smartphone, Shield, Settings } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface HeaderProps {
@@ -10,6 +10,7 @@ interface HeaderProps {
   onOpenSupport: () => void;
   onOpenInstall: () => void;
   onOpenPrivacy?: () => void;
+  onOpenSettings?: () => void;
   customerPhone?: string;
 }
 
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSupport,
   onOpenInstall,
   onOpenPrivacy,
+  onOpenSettings,
   customerPhone = '739992781',
 }) => {
   return (
@@ -108,6 +110,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Shield className="w-3.5 h-3.5 text-[#245BDB]" />
             <span className="hidden lg:inline">الخصوصية</span>
+          </button>
+        )}
+
+        {/* User / Driver Settings Shortcut */}
+        {currentRole && onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#EAF2FF] text-[#245BDB] text-xs font-bold border border-[#245BDB]/25 transition-all cursor-pointer whitespace-nowrap shadow-xs"
+            title="الإعدادات (مثل واتساب)"
+          >
+            <Settings className="w-3.5 h-3.5 text-[#245BDB]" />
+            <span className="hidden sm:inline">الإعدادات</span>
           </button>
         )}
 

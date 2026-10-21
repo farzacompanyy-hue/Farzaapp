@@ -17,6 +17,7 @@ import {
   X,
   CreditCard,
   ChevronDown,
+  Settings,
 } from 'lucide-react';
 
 interface PassengerViewProps {
@@ -26,6 +27,7 @@ interface PassengerViewProps {
   onBookTrip: (tripId: string, seatsCount: number, name: string, phone: string) => void;
   onOpenChat: (bookingId: string) => void;
   onRateDriver: (bookingId: string, rating: number) => void;
+  onOpenSettings?: () => void;
 }
 
 export const PassengerView: React.FC<PassengerViewProps> = ({
@@ -35,6 +37,7 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
   onBookTrip,
   onOpenChat,
   onRateDriver,
+  onOpenSettings,
 }) => {
   const [activeTab, setActiveTab] = useState<'search' | 'my_bookings'>('search');
   const [fromCity, setFromCity] = useState<string>('صنعاء');
@@ -118,6 +121,16 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
               </span>
             )}
           </button>
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[#245BDB] bg-white hover:bg-[#EAF2FF] border border-[#245BDB]/25 shadow-xs"
+              title="إعدادات الحساب مثل واتساب"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>الإعدادات</span>
+            </button>
+          )}
         </div>
       </div>
 

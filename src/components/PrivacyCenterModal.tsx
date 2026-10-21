@@ -4,7 +4,6 @@ import {
   Shield,
   FileText,
   Sliders,
-  Download,
   Trash2,
   Mail,
   X,
@@ -26,7 +25,7 @@ import { Booking, Trip, ChatMessage, Complaint } from '../types';
 
 interface PrivacyCenterModalProps {
   onClose: () => void;
-  initialTab?: 'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact';
+  initialTab?: 'privacy' | 'terms' | 'consents' | 'delete' | 'contact';
   userData?: {
     userId?: string;
     userName?: string;
@@ -46,7 +45,7 @@ export const PrivacyCenterModal: React.FC<PrivacyCenterModalProps> = ({
   userData,
   onAccountDeleted,
 }) => {
-  const [activeTab, setActiveTab] = useState<'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact'>(
+  const [activeTab, setActiveTab] = useState<'privacy' | 'terms' | 'consents' | 'delete' | 'contact'>(
     initialTab
   );
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
@@ -68,42 +67,6 @@ export const PrivacyCenterModal: React.FC<PrivacyCenterModalProps> = ({
   const [contactSubject, setContactSubject] = useState('access_request');
   const [contactMessage, setContactMessage] = useState('');
   const [contactSent, setContactSent] = useState(false);
-
-  // Data Export Logic
-  const handleExportData = () => {
-    const exportPayload = {
-      farzaPrivacyVersion: LEGAL_OPERATOR_PLACEHOLDERS.policyVersion,
-      generatedAt: new Date().toISOString(),
-      userProfile: {
-        userId: userData?.userId || 'usr-current',
-        name: userData?.userName || 'المستخدم الحالي',
-        phone: userData?.userPhone || 'غير محدد',
-        role: userData?.userRole || 'passenger',
-      },
-      bookings: userData?.bookings || [],
-      trips: userData?.trips || [],
-      chatMessages: userData?.chatMessages || [],
-      complaints: userData?.complaints || [],
-      consents: {
-        foregroundLocation: allowLocation,
-        pushNotifications: allowNotifications,
-        diagnosticTelemetry: allowDiagnostics,
-      },
-      notice:
-        'هذه نسخة مشفرة ومقروءة من بياناتك الشخصية المسجلة في منصة فَرْزَة وفق حق الوصول والنقل الرقمي للبيانات.',
-    };
-
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute(
-      'download',
-      `farza_my_data_export_${new Date().toISOString().slice(0, 10)}.json`
-    );
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
 
   // Real Account Deletion Execution
   const handleExecuteDeletion = (e: React.FormEvent) => {
@@ -218,18 +181,6 @@ export const PrivacyCenterModal: React.FC<PrivacyCenterModalProps> = ({
           >
             <Sliders className="w-3.5 h-3.5" />
             <span>{lang === 'ar' ? 'إدارة الأذونات' : 'Permissions'}</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('export')}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === 'export'
-                ? 'bg-[#245BDB] text-white shadow-xs'
-                : 'text-[#7B8494] hover:text-[#202633] hover:bg-[#FFFFFF]'
-            }`}
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{lang === 'ar' ? 'تصدير بياناتي' : 'Export My Data'}</span>
           </button>
 
           <button
@@ -440,42 +391,7 @@ export const PrivacyCenterModal: React.FC<PrivacyCenterModalProps> = ({
             </div>
           )}
 
-          {/* TAB 4: DATA EXPORT / PORTABILITY */}
-          {activeTab === 'export' && (
-            <div className="space-y-5 text-right max-w-xl mx-auto">
-              <div className="text-center space-y-2">
-                <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#245BDB] border border-[#245BDB]/30 flex items-center justify-center mx-auto">
-                  <Download className="w-7 h-7" />
-                </div>
-                <h4 className="text-base font-black text-[#202633]">حق الوصول وتصدير البيانات الشخصية</h4>
-                <p className="text-xs text-[#7B8494] max-w-md mx-auto leading-relaxed">
-                  امتثالاً لمعايير الخصوصية وحماية البيانات، يمكنك تنزيل ملف متكامل بصيغة JSON الرقمية يحتوي على بياناتك
-                  المسجلة وسجل حجوزاتك ومحادثاتك.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-2 text-xs">
-                <div className="font-bold text-[#202633]">محتويات حزمة البيانات المصدرة:</div>
-                <ul className="list-disc list-inside space-y-1 text-[#7B8494]">
-                  <li>بيانات ملفك الشخصي ورقم هاتفك المسجل</li>
-                  <li>سجل الحجوزات الكامل مع تواريخ ومسارات السفر</li>
-                  <li>سجل الرسائل النصية المتبادلة داخل التطبيق</li>
-                  <li>تذاكر الدعم والشكاوى المقدمة منك</li>
-                  <li>إعدادات وتفضيلات الخصوصية النشطة</li>
-                </ul>
-              </div>
-
-              <button
-                onClick={handleExportData}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-[#245BDB]/25"
-              >
-                <Download className="w-4 h-4" />
-                <span>تنزيل نسخة من بياناتي الآن (JSON)</span>
-              </button>
-            </div>
-          )}
-
-          {/* TAB 5: ACCOUNT & DATA DELETION */}
+          {/* TAB 4: ACCOUNT & DATA DELETION */}
           {activeTab === 'delete' && (
             <div className="space-y-5 text-right max-w-xl mx-auto">
               {deleteConfirmed ? (

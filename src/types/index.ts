@@ -148,10 +148,34 @@ export interface Complaint {
 export interface SystemSettings {
   commissionRatePercent: number; // default 20%
   customerServicePhone: string; // '739992781'
-  splashDurationSeconds: number; // default 2.5
+  splashDurationSeconds: number; // default 3.5
   splashAdEnabled: boolean;
   splashAdTitle: string;
   splashAdDescription: string;
   splashAdImage: string;
   appSlogan: string;
 }
+
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  language: 'ar' | 'en';
+  allowLocation: boolean;
+  notificationsEnabled: boolean;
+  bookingAlerts: boolean;
+  tripReminders: boolean;
+  promotionsAlerts: boolean;
+  chatSound: boolean;
+  favoriteCities: string[];
+  preferredSeat: 'front' | 'window' | 'any';
+}
+
+export interface PassengerProfile {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  avatar: string;
+  connectedProviders: ('phone' | 'google' | 'apple')[];
+  createdAt: string;
+}
+

@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Receipt,
   FileCheck,
+  Settings,
 } from 'lucide-react';
 
 interface DriverViewProps {
@@ -30,6 +31,7 @@ interface DriverViewProps {
   onRejectBooking: (bookingId: string) => void;
   onSubmitCommissionReceipt: (bookingId: string, bank: string, refNumber: string, receiptPhoto: string) => void;
   onOpenChat: (bookingId: string) => void;
+  onOpenSettings?: () => void;
 }
 
 export const DriverView: React.FC<DriverViewProps> = ({
@@ -43,6 +45,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
   onRejectBooking,
   onSubmitCommissionReceipt,
   onOpenChat,
+  onOpenSettings,
 }) => {
   const [activeTab, setActiveTab] = useState<'trips' | 'bookings' | 'commissions'>('bookings');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -149,8 +152,18 @@ export const DriverView: React.FC<DriverViewProps> = ({
           </div>
         </div>
 
-        {/* Action: Create New Trip */}
-        <div className="flex items-center gap-3">
+        {/* Action: Create New Trip & Settings */}
+        <div className="flex items-center gap-2.5">
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="px-4 py-3 rounded-2xl bg-white hover:bg-[#EAF2FF] text-[#245BDB] border border-[#245BDB]/25 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              title="إعدادات السائق مثل واتساب"
+            >
+              <Settings className="w-4 h-4" />
+              <span>إعدادات السائق</span>
+            </button>
+          )}
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-5 py-3 rounded-2xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md shadow-[#245BDB]/20 cursor-pointer active:scale-[0.98]"

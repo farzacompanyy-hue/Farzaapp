@@ -10,6 +10,8 @@ import { CustomerSupportModal } from './components/CustomerSupportModal';
 import { InstallIPhoneModal } from './components/InstallIPhoneModal';
 import { PrivacyCenterModal } from './components/PrivacyCenterModal';
 import { PublicLegalPage } from './components/PublicLegalPage';
+import { PassengerSettingsModal } from './components/PassengerSettingsModal';
+import { DriverSettingsModal } from './components/DriverSettingsModal';
 import {
   INITIAL_DRIVERS,
   INITIAL_TRIPS,
@@ -37,15 +39,17 @@ export default function App() {
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
 
-  // Active Modals: Chat, Support, Install & Privacy Center
+  // Active Modals: Chat, Support, Install, Privacy Center & Settings
   const [activeChatBookingId, setActiveChatBookingId] = useState<string | null>(null);
   const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
   const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
-  const [privacyTab, setPrivacyTab] = useState<'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact'>('privacy');
+  const [showPassengerSettings, setShowPassengerSettings] = useState<boolean>(false);
+  const [showDriverSettings, setShowDriverSettings] = useState<boolean>(false);
+  const [privacyTab, setPrivacyTab] = useState<'privacy' | 'terms' | 'consents' | 'delete' | 'contact'>('privacy');
 
   const handleOpenPrivacy = (
-    tab: 'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact' = 'privacy'
+    tab: 'privacy' | 'terms' | 'consents' | 'delete' | 'contact' = 'privacy'
   ) => {
     setPrivacyTab(tab);
     setShowPrivacyModal(true);
@@ -55,6 +59,24 @@ export default function App() {
     // Erase matching bookings and reset session
     setBookings((prev) => prev.filter((b) => b.passengerPhone !== phone));
     setComplaints((prev) => prev.filter((c) => c.userId !== phone));
+  };
+
+  const handleCancelBooking = (bookingId: string) => {
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (!booking) return;
+
+    setBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status: 'cancelled' } : b))
+    );
+
+    // Restore available seats on trip
+    setTrips((prev) =>
+      prev.map((t) =>
+        t.id === booking.tripId
+          ? { ...t, availableSeats: Math.min(t.totalSeats, t.availableSeats + booking.seatsCount) }
+          : t
+      )
+    );
   };
 
   // Network State & Universal PWA Install Prompt Listener
@@ -343,6 +365,10 @@ export default function App() {
             onOpenSupport={() => setShowSupportModal(true)}
             onOpenInstall={() => setShowInstallModal(true)}
             onOpenPrivacy={() => handleOpenPrivacy('privacy')}
+            onOpenSettings={() => {
+              if (currentRole === 'passenger') setShowPassengerSettings(true);
+              else if (currentRole === 'driver') setShowDriverSettings(true);
+            }}
             customerPhone={settings.customerServicePhone}
           />
 
@@ -368,6 +394,7 @@ export default function App() {
                 onBookTrip={handleBookTrip}
                 onOpenChat={(bookingId) => setActiveChatBookingId(bookingId)}
                 onRateDriver={handleRateDriver}
+                onOpenSettings={() => setShowPassengerSettings(true)}
               />
             ) : currentRole === 'driver' ? (
               /* DRIVER INTERCITY FLEET & COMMISSION VIEW */
@@ -382,6 +409,7 @@ export default function App() {
                 onRejectBooking={handleRejectBooking}
                 onSubmitCommissionReceipt={handleSubmitCommissionReceipt}
                 onOpenChat={(bookingId) => setActiveChatBookingId(bookingId)}
+                onOpenSettings={() => setShowDriverSettings(true)}
               />
             ) : (
               /* ADMIN DASHBOARD & VERIFICATION VIEW */
@@ -450,6 +478,59 @@ export default function App() {
             />
           )}
 
+          {/* PASSENGER USER SETTINGS MODAL (WHATSAPP-STYLE) */}
+          {showPassengerSettings && (
+            <PassengerSettingsModal
+              onClose={() => setShowPassengerSettings(false)}
+              bookings={bookings}
+              trips={trips}
+              onCancelBooking={handleCancelBooking}
+              onOpenChat={(bookingId) => {
+                setShowPassengerSettings(false);
+                setActiveChatBookingId(bookingId);
+              }}
+              onOpenPrivacyCenter={(tab) => {
+                setShowPassengerSettings(false);
+                handleOpenPrivacy(tab);
+              }}
+              onLogout={() => {
+                setShowPassengerSettings(false);
+                setCurrentRole(null);
+              }}
+              onAccountDeleted={(phone) => {
+                setShowPassengerSettings(false);
+                handleAccountDeleted(phone);
+                setCurrentRole(null);
+              }}
+              customerPhone={settings.customerServicePhone}
+            />
+          )}
+
+          {/* DRIVER SETTINGS MODAL (WHATSAPP-STYLE) */}
+          {showDriverSettings && (
+            <DriverSettingsModal
+              driver={currentDriver}
+              trips={trips}
+              bookings={bookings}
+              commissionRate={settings.commissionRatePercent}
+              onClose={() => setShowDriverSettings(false)}
+              onOpenPrivacyCenter={(tab) => {
+                setShowDriverSettings(false);
+                handleOpenPrivacy(tab);
+              }}
+              onLogout={() => {
+                setShowDriverSettings(false);
+                setCurrentRole(null);
+              }}
+              onAccountDeleted={(phone) => {
+                setShowDriverSettings(false);
+                handleAccountDeleted(phone);
+                setCurrentRole(null);
+              }}
+              customerPhone={settings.customerServicePhone}
+            />
+          )}
+
           {/* FOOTER WITH COMPREHENSIVE PRIVACY & LEGAL LINKS */}
           <footer className="w-full py-6 px-4 border-t border-[#245BDB]/15 text-center text-xs text-[#7B8494] bg-[#F5F7FB]">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -480,20 +561,6 @@ export default function App() {
                   className="hover:text-[#245BDB] font-medium transition-colors cursor-pointer"
                 >
                   مركز الخصوصية والأذونات
-                </button>
-                <span>·</span>
-                <button
-                  onClick={() => handleOpenPrivacy('export')}
-                  className="hover:text-[#245BDB] font-medium transition-colors cursor-pointer"
-                >
-                  تصدير بياناتي
-                </button>
-                <span>·</span>
-                <button
-                  onClick={() => handleOpenPrivacy('delete')}
-                  className="text-red-600 hover:text-red-700 font-bold transition-colors cursor-pointer"
-                >
-                  حذف الحساب
                 </button>
                 <span>·</span>
                 <button

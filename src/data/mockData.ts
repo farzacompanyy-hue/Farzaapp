@@ -10,7 +10,7 @@ export const ASSETS = {
 export const INITIAL_SETTINGS: SystemSettings = {
   commissionRatePercent: 20,
   customerServicePhone: '739992781',
-  splashDurationSeconds: 2.5,
+  splashDurationSeconds: 3.5,
   splashAdEnabled: false,
   splashAdTitle: '',
   splashAdDescription: '',

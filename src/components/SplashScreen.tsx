@@ -11,21 +11,21 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({
   onComplete,
-  durationSeconds = 2.8,
+  durationSeconds = 3.5,
 }) => {
   const [stage, setStage] = useState<number>(0);
   const [soundMuted, setSoundMuted] = useState<boolean>(true);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStage(1), 200);
-    const t2 = setTimeout(() => setStage(2), 700);
-    const t3 = setTimeout(() => setStage(3), 1300);
-    const t4 = setTimeout(() => setStage(4), 1900);
+    const t1 = setTimeout(() => setStage(1), 250);
+    const t2 = setTimeout(() => setStage(2), 900);
+    const t3 = setTimeout(() => setStage(3), 1700);
+    const t4 = setTimeout(() => setStage(4), 2400);
 
     const totalTime = durationSeconds * 1000;
     const tEnd = setTimeout(() => {
       onComplete();
-    }, Math.max(totalTime, 2600));
+    }, Math.max(totalTime, 3500));
 
     return () => {
       clearTimeout(t1);

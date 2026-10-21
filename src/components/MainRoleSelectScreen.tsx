@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FarzaLogo } from './FarzaLogo';
+import { AuthLoginModal } from './AuthLoginModal';
 import { ASSETS } from '../data/mockData';
 import {
   UserCheck,
@@ -27,7 +28,7 @@ interface MainRoleSelectScreenProps {
   onReplayIntro: () => void;
   onOpenSupport: () => void;
   onOpenInstall: () => void;
-  onOpenPrivacy?: (tab?: 'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact') => void;
+  onOpenPrivacy?: (tab?: 'privacy' | 'terms' | 'consents' | 'delete' | 'contact') => void;
   customerPhone?: string;
   slogan?: string;
 }
@@ -43,24 +44,9 @@ export const MainRoleSelectScreen: React.FC<MainRoleSelectScreenProps> = ({
 }) => {
   // Auth Modal State
   const [authRole, setAuthRole] = useState<'passenger' | 'driver' | null>(null);
-  const [authMethod, setAuthMethod] = useState<'phone' | 'google' | 'apple'>('phone');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [consentAccepted, setConsentAccepted] = useState(true);
 
   const handleStartAuth = (role: 'passenger' | 'driver') => {
     setAuthRole(role);
-    setOtpSent(false);
-    setOtpCode('');
-  };
-
-  const handleCompleteAuth = () => {
-    if (!consentAccepted) return;
-    if (authRole) {
-      onSelectRole(authRole);
-      setAuthRole(null);
-    }
   };
 
   return (
@@ -334,193 +320,15 @@ export const MainRoleSelectScreen: React.FC<MainRoleSelectScreenProps> = ({
       {/* MODERN MULTI-PROVIDER AUTHENTICATION MODAL */}
       <AnimatePresence>
         {authRole && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative max-w-md w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 space-y-5 shadow-2xl text-right text-[#202633]"
-            >
-              <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-[#202633]">
-                      تسجيل الدخول — {authRole === 'passenger' ? 'حساب الراكب' : 'حساب السائق'}
-                    </h3>
-                    <p className="text-[11px] text-[#7B8494]">مصادقة مشفرة وآمنة لحماية هويتك وحجوزاتك</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setAuthRole(null)}
-                  className="w-7 h-7 rounded-full bg-[#F5F7FB] text-[#7B8494] hover:text-[#202633] flex items-center justify-center cursor-pointer border border-[#DCE4F0]"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Authentication Provider Tabs */}
-              <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs font-bold">
-                <button
-                  onClick={() => setAuthMethod('phone')}
-                  className={`py-2 px-2 rounded-lg transition-all cursor-pointer text-center ${
-                    authMethod === 'phone' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
-                  }`}
-                >
-                  رقم الهاتف (SMS)
-                </button>
-                <button
-                  onClick={() => setAuthMethod('google')}
-                  className={`py-2 px-2 rounded-lg transition-all cursor-pointer text-center ${
-                    authMethod === 'google' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
-                  }`}
-                >
-                  Google
-                </button>
-                <button
-                  onClick={() => setAuthMethod('apple')}
-                  className={`py-2 px-2 rounded-lg transition-all cursor-pointer text-center ${
-                    authMethod === 'apple' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
-                  }`}
-                >
-                  Apple
-                </button>
-              </div>
-
-              {/* Provider 1: Phone SMS OTP */}
-              {authMethod === 'phone' && (
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#202633]">رقم الهاتف الجوال اليمني</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="tel"
-                        dir="ltr"
-                        placeholder="77XXXXXXX"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="flex-1 h-11 px-3 rounded-xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs font-mono outline-none focus:border-[#245BDB]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (phoneNumber.trim().length >= 8) {
-                            setOtpSent(true);
-                            setOtpCode('5829'); // Demo verification code
-                          }
-                        }}
-                        className="h-11 px-3 rounded-xl bg-[#EAF2FF] hover:bg-[#D7E7FF] text-[#245BDB] font-bold text-xs border border-[#245BDB]/30 transition-all cursor-pointer whitespace-nowrap"
-                      >
-                        {otpSent ? 'إعادة الإرسال' : 'إرسال الرمز'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {otpSent && (
-                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-[#202633]">رمز التحقق (OTP)</label>
-                        <span className="text-[10px] text-[#245BDB] font-mono">الرمز التجريبي: 5829</span>
-                      </div>
-                      <input
-                        type="text"
-                        dir="ltr"
-                        placeholder="أدخل الرمز المكون من 4 أرقام"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        className="w-full h-11 px-3 rounded-xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs font-mono text-center tracking-widest outline-none focus:border-[#245BDB]"
-                      />
-                    </motion.div>
-                  )}
-                </div>
-              )}
-
-              {/* Provider 2: Google Sign-In */}
-              {authMethod === 'google' && (
-                <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-2.5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-[#202633]">
-                    <span className="text-sm">🌐</span>
-                    <span>تسجيل الدخول الموحد عبر Google</span>
-                  </div>
-                  <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                    يتلقى تطبيق فَرْزَة فقط: المعرف الآمن، اسمك المسجل، وصورة ملفك الشخصي. لا نصل إطلاقاً لكلمات مرور حسابك في Google.
-                  </p>
-                  <div className="p-2.5 rounded-xl bg-white border border-[#245BDB]/20 text-[11px] text-[#245BDB] font-medium flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>جاهز للربط عبر Google Identity Services</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Provider 3: Apple Sign-In */}
-              {authMethod === 'apple' && (
-                <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-2.5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-[#202633]">
-                    <span className="text-sm"></span>
-                    <span>تسجيل الدخول باستخدام Apple</span>
-                  </div>
-                  <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                    يدعم ميزة إخفاء البريد (Private Relay). يتم تشفير الرموز بأعلى معايير أمان iOS دون الوصول لبيانات جهازك الحساسة.
-                  </p>
-                  <div className="p-2.5 rounded-xl bg-white border border-[#245BDB]/20 text-[11px] text-[#245BDB] font-medium flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>جاهز للربط عبر Apple Sign In API</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Consent Checkbox */}
-              <div className="pt-1 flex items-start gap-2.5 text-xs text-[#202633]">
-                <input
-                  type="checkbox"
-                  id="consentCheck"
-                  checked={consentAccepted}
-                  onChange={(e) => setConsentAccepted(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-[#245BDB] focus:ring-[#245BDB] cursor-pointer"
-                />
-                <label htmlFor="consentCheck" className="text-[11px] leading-relaxed cursor-pointer select-none">
-                  أقر بموافقتي التامة على{' '}
-                  <button
-                    type="button"
-                    onClick={() => onOpenPrivacy && onOpenPrivacy('terms')}
-                    className="text-[#245BDB] font-bold underline"
-                  >
-                    شروط الاستخدام
-                  </button>{' '}
-                  و{' '}
-                  <button
-                    type="button"
-                    onClick={() => onOpenPrivacy && onOpenPrivacy('privacy')}
-                    className="text-[#245BDB] font-bold underline"
-                  >
-                    سياسة الخصوصية
-                  </button>{' '}
-                  الخاصة بمنصة فَرْزَة لنقل الركاب.
-                </label>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={!consentAccepted}
-                  onClick={handleCompleteAuth}
-                  className="flex-1 py-3 px-4 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] disabled:bg-gray-300 text-white font-black text-xs transition-all shadow-md shadow-[#245BDB]/20 cursor-pointer text-center"
-                >
-                  متابعة والدخول إلى المنصة
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthRole(null)}
-                  className="py-3 px-4 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#202633] text-xs font-medium border border-[#DCE4F0] cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </motion.div>
-          </div>
+          <AuthLoginModal
+            role={authRole}
+            onClose={() => setAuthRole(null)}
+            onSuccess={(role) => {
+              onSelectRole(role);
+              setAuthRole(null);
+            }}
+            onOpenPrivacy={onOpenPrivacy}
+          />
         )}
       </AnimatePresence>
     </div>
