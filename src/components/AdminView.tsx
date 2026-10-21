@@ -361,6 +361,50 @@ export const AdminView: React.FC<AdminViewProps> = ({
               className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-mono font-bold text-sm outline-none focus:border-[#1769FF]"
             />
           </div>
+          {/* Legal Compliance & App Store Safety Overview */}
+          <div className="p-5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/25 space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-[#202633]">
+              <span className="flex items-center gap-1.5 text-[#245BDB]">
+                <ShieldCheck className="w-4 h-4" />
+                <span>الامتثال القانوني ومتطلبات متاجر التطبيقات (Google Play & Apple)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-[#EAF2FF] text-[#245BDB] text-[10px] font-mono">
+                جاهز للرفع والتضمين
+              </span>
+            </div>
+
+            <p className="text-[11px] text-[#7B8494] leading-relaxed">
+              تم تجهيز السياسات بروابط عامة ثابتة HTTPS وبوابات حذف الحساب المستقلة لتلبية معايير مراجعة التطبيقات:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
+              <a
+                href="/privacy.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-xl bg-white border border-[#DCE4F0] hover:border-[#245BDB] flex items-center justify-between transition-colors"
+              >
+                <div>
+                  <div className="font-bold text-[#202633]">رابط سياسة الخصوصية العام</div>
+                  <div className="text-[10px] text-[#7B8494] font-mono">/privacy.html</div>
+                </div>
+                <FileText className="w-4 h-4 text-[#245BDB]" />
+              </a>
+
+              <a
+                href="/delete-account.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-xl bg-white border border-[#DCE4F0] hover:border-red-500 flex items-center justify-between transition-colors"
+              >
+                <div>
+                  <div className="font-bold text-red-600">بوابة طلب حذف الحساب العامة</div>
+                  <div className="text-[10px] text-[#7B8494] font-mono">/delete-account.html</div>
+                </div>
+                <CheckCircle2 className="w-4 h-4 text-red-500" />
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>

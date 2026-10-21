@@ -8,6 +8,8 @@ import { AdminView } from './components/AdminView';
 import { ChatModal } from './components/ChatModal';
 import { CustomerSupportModal } from './components/CustomerSupportModal';
 import { InstallIPhoneModal } from './components/InstallIPhoneModal';
+import { PrivacyCenterModal } from './components/PrivacyCenterModal';
+import { PublicLegalPage } from './components/PublicLegalPage';
 import {
   INITIAL_DRIVERS,
   INITIAL_TRIPS,
@@ -19,6 +21,11 @@ import {
 import { UserRole, Trip, Booking, Driver, SystemSettings, ChatMessage, Complaint } from './types';
 
 export default function App() {
+  // Check standalone public legal URL parameter (?page=privacy | ?page=terms | ?page=delete-account)
+  const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const pageParam = urlParams.get('page') as 'privacy' | 'terms' | 'delete-account' | null;
+  const [activeLegalPage, setActiveLegalPage] = useState<'privacy' | 'terms' | 'delete-account' | null>(pageParam);
+
   // Splash state
   const [showSplash, setShowSplash] = useState<boolean>(true);
   
@@ -30,10 +37,25 @@ export default function App() {
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
 
-  // Active Chat, Support & iPhone Install Modals
+  // Active Modals: Chat, Support, Install & Privacy Center
   const [activeChatBookingId, setActiveChatBookingId] = useState<string | null>(null);
   const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
   const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
+  const [privacyTab, setPrivacyTab] = useState<'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact'>('privacy');
+
+  const handleOpenPrivacy = (
+    tab: 'privacy' | 'terms' | 'consents' | 'export' | 'delete' | 'contact' = 'privacy'
+  ) => {
+    setPrivacyTab(tab);
+    setShowPrivacyModal(true);
+  };
+
+  const handleAccountDeleted = (phone: string) => {
+    // Erase matching bookings and reset session
+    setBookings((prev) => prev.filter((b) => b.passengerPhone !== phone));
+    setComplaints((prev) => prev.filter((c) => c.userId !== phone));
+  };
 
   // Network State & Universal PWA Install Prompt Listener
   const [isOnline, setIsOnline] = useState<boolean>(
@@ -280,6 +302,21 @@ export default function App() {
     ? trips.find((t) => t.id === activeChatBooking.tripId)
     : undefined;
 
+  // If standalone legal URL parameter is active (?page=privacy | terms | delete-account)
+  if (activeLegalPage) {
+    return (
+      <PublicLegalPage
+        initialType={activeLegalPage}
+        onNavigateHome={() => {
+          setActiveLegalPage(null);
+          if (typeof window !== 'undefined' && window.history) {
+            window.history.pushState({}, '', window.location.pathname);
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FFFFFF] text-[#202633] flex flex-col selection:bg-[#245BDB] selection:text-white">
       {/* 1. INTRO SPLASH SCREEN (Stage 0 to 4: Digital GPS Map, Toyota Hilux & Farza Logo) */}
@@ -305,6 +342,7 @@ export default function App() {
             onReplayIntro={() => setShowSplash(true)}
             onOpenSupport={() => setShowSupportModal(true)}
             onOpenInstall={() => setShowInstallModal(true)}
+            onOpenPrivacy={() => handleOpenPrivacy('privacy')}
             customerPhone={settings.customerServicePhone}
           />
 
@@ -317,6 +355,7 @@ export default function App() {
                 onReplayIntro={() => setShowSplash(true)}
                 onOpenSupport={() => setShowSupportModal(true)}
                 onOpenInstall={() => setShowInstallModal(true)}
+                onOpenPrivacy={handleOpenPrivacy}
                 customerPhone={settings.customerServicePhone}
                 slogan={settings.appSlogan}
               />
@@ -392,25 +431,81 @@ export default function App() {
             />
           )}
 
-          {/* FOOTER */}
+          {/* IN-APP PRIVACY & LEGAL CENTER MODAL */}
+          {showPrivacyModal && (
+            <PrivacyCenterModal
+              initialTab={privacyTab}
+              onClose={() => setShowPrivacyModal(false)}
+              userData={{
+                userId: 'usr-current',
+                userName: 'مستخدم فَرْزَة (الحالي)',
+                userPhone: '771239999',
+                userRole: currentRole || 'passenger',
+                bookings,
+                trips,
+                chatMessages,
+                complaints,
+              }}
+              onAccountDeleted={handleAccountDeleted}
+            />
+          )}
+
+          {/* FOOTER WITH COMPREHENSIVE PRIVACY & LEGAL LINKS */}
           <footer className="w-full py-6 px-4 border-t border-[#245BDB]/15 text-center text-xs text-[#7B8494] bg-[#F5F7FB]">
-            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[#202633]">FARZA · فَرْزَة</span>
                 <span>—</span>
                 <span>منصة حجز مقاعد النقل بين المدن اليمنية</span>
               </div>
-              <div className="flex items-center gap-4 text-[11px]">
+
+              {/* Legal & Compliance Quick Links */}
+              <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+                <button
+                  onClick={() => handleOpenPrivacy('privacy')}
+                  className="hover:text-[#245BDB] font-medium transition-colors cursor-pointer"
+                >
+                  سياسة الخصوصية
+                </button>
+                <span>·</span>
+                <button
+                  onClick={() => handleOpenPrivacy('terms')}
+                  className="hover:text-[#245BDB] font-medium transition-colors cursor-pointer"
+                >
+                  شروط الاستخدام
+                </button>
+                <span>·</span>
+                <button
+                  onClick={() => handleOpenPrivacy('consents')}
+                  className="hover:text-[#245BDB] font-medium transition-colors cursor-pointer"
+                >
+                  مركز الخصوصية والأذونات
+                </button>
+                <span>·</span>
+                <button
+                  onClick={() => handleOpenPrivacy('export')}
+                  className="hover:text-[#245BDB] font-medium transition-colors cursor-pointer"
+                >
+                  تصدير بياناتي
+                </button>
+                <span>·</span>
+                <button
+                  onClick={() => handleOpenPrivacy('delete')}
+                  className="text-red-600 hover:text-red-700 font-bold transition-colors cursor-pointer"
+                >
+                  حذف الحساب
+                </button>
+                <span>·</span>
                 <button
                   onClick={() => setShowSplash(true)}
                   className="hover:text-[#245BDB] transition-colors cursor-pointer"
                 >
-                  إعادة تشغيل المقدمة
+                  المقدمة
                 </button>
                 <span>·</span>
                 <button
                   onClick={() => setShowSupportModal(true)}
-                  className="hover:text-[#245BDB] transition-colors cursor-pointer"
+                  className="hover:text-[#245BDB] font-bold transition-colors cursor-pointer"
                 >
                   خدمة العملاء ({settings.customerServicePhone})
                 </button>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FarzaLogo } from './FarzaLogo';
-import { Play, PhoneCall, Smartphone } from 'lucide-react';
+import { Play, PhoneCall, Smartphone, Shield } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   onReplayIntro: () => void;
   onOpenSupport: () => void;
   onOpenInstall: () => void;
+  onOpenPrivacy?: () => void;
   customerPhone?: string;
 }
 
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   onReplayIntro,
   onOpenSupport,
   onOpenInstall,
+  onOpenPrivacy,
   customerPhone = '739992781',
 }) => {
   return (
@@ -96,6 +98,18 @@ export const Header: React.FC<HeaderProps> = ({
           <Play className="w-3.5 h-3.5 text-[#245BDB] fill-[#245BDB]/20" />
           <span className="hidden sm:inline">المقدمة</span>
         </button>
+
+        {/* Privacy Center Button */}
+        {onOpenPrivacy && (
+          <button
+            onClick={onOpenPrivacy}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#202633] hover:text-[#245BDB] text-xs font-medium border border-[#DCE4F0] hover:border-[#245BDB]/40 transition-all cursor-pointer whitespace-nowrap"
+            title="مركز الخصوصية وحماية البيانات"
+          >
+            <Shield className="w-3.5 h-3.5 text-[#245BDB]" />
+            <span className="hidden lg:inline">الخصوصية</span>
+          </button>
+        )}
 
         {/* Customer Support shortcut */}
         <button

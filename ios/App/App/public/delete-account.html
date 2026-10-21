@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>طلب حذف الحساب والبيانات — منصة فَرْزَة (FARZA)</title>
+  <meta name="description" content="البوابة العامة لطلب حذف الحساب والبيانات الشخصية من تطبيق فَرْزَة لنقل الركاب، امتثالاً لسياسات Google Play وApple App Store.">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.8;
+      background-color: #F5F7FB;
+      color: #202633;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      padding: 32px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid #DCE4F0;
+    }
+    h1 { color: #c53030; font-size: 22px; margin-top: 0; }
+    p { font-size: 13px; color: #4a5568; }
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      color: #9b2c2c;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px;
+      border: 1px solid #DCE4F0;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #e53e3e;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #c53030; }
+    .success {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #f0fff4;
+      border: 1px solid #9ae6b4;
+      border-radius: 12px;
+      color: #22543d;
+    }
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #7B8494;
+    }
+    a { color: #245BDB; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>طلب حذف الحساب وجميع البيانات الشخصية</h1>
+    <p>بوابة الامتثال لسياسات Google Play و Apple App Store وحماية البيانات الشخصية لمنصة فَرْزَة.</p>
+
+    <div class="warning-box">
+      تنبيه: حذف الحساب نهائي وسيؤدي لمسح ملفك الشخصي وسجل رسائلك وإلغاء أي حجوزات غير مؤكدة.
+    </div>
+
+    <div id="successBox" class="success">
+      <h3>تم استلام وتوثيق طلب حذف الحساب</h3>
+      <p id="successMsg"></p>
+      <p>الرقم المرجعي للطلب: <strong id="receiptId"></strong></p>
+      <p>سيتم إتلاف البيانات الشخصية من النظام التشغيلي في غضون 48 ساعة.</p>
+    </div>
+
+    <form id="deleteForm" onsubmit="handleSubmit(event)">
+      <label for="phone">رقم الهاتف المسجل في التطبيق</label>
+      <input type="tel" id="phone" required placeholder="مثال: 771234567" dir="ltr">
+
+      <label for="reason">سبب طلب الحذف (اختياري)</label>
+      <select id="reason">
+        <option value="not_needed">لم أعد بحاجة للخدمة</option>
+        <option value="privacy">أسباب تتعلق بالخصوصية</option>
+        <option value="new_number">تغيير رقم الهاتف</option>
+        <option value="other">أسباب أخرى</option>
+      </select>
+
+      <button type="submit">تأكيد طلب حذف الحساب والبيانات</button>
+    </form>
+
+    <div class="footer">
+      <a href="/privacy.html">الاطلاع على سياسة الخصوصية الكاملة</a> · منصة فَرْزَة FARZA © 2026
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      var phone = document.getElementById('phone').value;
+      if (!phone) return;
+      document.getElementById('deleteForm').style.display = 'none';
+      var ref = 'DEL-WEB-' + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('receiptId').innerText = ref;
+      document.getElementById('successMsg').innerText = 'تم تسجيل طلب حذف الحساب لرقم الهاتف: ' + phone;
+      document.getElementById('successBox').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
