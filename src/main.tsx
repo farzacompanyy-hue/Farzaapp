@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator && typeof window !== 'undefined') {
             installingWorker.onstatechange = () => {
               if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 // Inform user or auto-update on next refresh
-                console.log('FARZA: تم تجهيز تحديث جديد للتطبيق في الخلفية');
+                console.log('WASLA: تم تجهيز تحديث جديد للتطبيق في الخلفية');
               }
             };
           }

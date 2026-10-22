@@ -73,7 +73,7 @@ export const InstallIPhoneModal: React.FC<InstallIPhoneModalProps> = ({
               <Smartphone className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-[#202633]">تثبيت تطبيق «فَرْزَة» على جهازك</h3>
+              <h3 className="text-lg font-black text-[#1A2536]">تثبيت تطبيق «وَصْلَة» على جهازك</h3>
               <p className="text-[11px] text-[#7B8494]">يعمل كتطبيق أصلي سريع بدون الحاجة لمتجر التطبيقات</p>
             </div>
           </div>
@@ -228,7 +228,7 @@ export const InstallIPhoneModal: React.FC<InstallIPhoneModalProps> = ({
               <div className="space-y-0.5">
                 <h4 className="text-xs font-bold text-[#202633]">اختر «تثبيت التطبيق» أو «الإضافة للشاشة الرئيسية»</h4>
                 <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                  اضغط <strong>Install app</strong> وسيتثبت تطبيق فَرْزَة على هاتفك وتجده في درج التطبيقات والشاشة الرئيسية.
+                  اضغط <strong>Install app</strong> وسيتثبت تطبيق وَصْلَة على هاتفك وتجده في درج التطبيقات والشاشة الرئيسية.
                 </p>
               </div>
             </div>
@@ -261,7 +261,7 @@ export const InstallIPhoneModal: React.FC<InstallIPhoneModalProps> = ({
               <div className="space-y-0.5">
                 <h4 className="text-xs font-bold text-[#202633]">اضغط «تثبيت» (Install)</h4>
                 <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                  سيفتح تطبيق فَرْزَة في نافذة منفصلة سريعة مع أيقونة على سطح المكتب وشريط المهام.
+                  سيفتح تطبيق وَصْلَة في نافذة منفصلة سريعة مع أيقونة على سطح المكتب وشريط المهام.
                 </p>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FarzaLogo } from './FarzaLogo';
+import { WaslaLogo } from './WaslaLogo';
 import {
   PRIVACY_POLICY_SECTIONS,
   TERMS_OF_SERVICE_SECTIONS,
@@ -34,12 +34,12 @@ export const PublicLegalPage: React.FC<PublicLegalPageProps> = ({
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-[#202633] font-['Cairo',sans-serif] flex flex-col">
       {/* Top Brand Bar */}
-      <header className="sticky top-0 z-40 w-full h-16 bg-[#FFFFFF]/95 backdrop-blur-xl border-b border-[#245BDB]/15 px-4 sm:px-8 flex items-center justify-between shadow-xs">
+      <header className="sticky top-0 z-40 w-full h-16 bg-[#FFFFFF]/95 backdrop-blur-xl border-b border-[#0056B3]/15 px-4 sm:px-8 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
-          <FarzaLogo size="sm" showText={false} />
+          <WaslaLogo size="sm" showText={false} />
           <div className="flex items-center gap-1.5">
-            <span className="text-xl font-black text-[#202633] font-['Plus_Jakarta_Sans',sans-serif]">FARZA</span>
-            <span className="text-xl font-black text-[#245BDB]">فَرْزَة</span>
+            <span className="text-xl font-black text-[#1A2536] font-['Plus_Jakarta_Sans',sans-serif]">WASLA</span>
+            <span className="text-xl font-black text-[#0056B3]">وَصْلَة</span>
           </div>
         </div>
 
@@ -120,7 +120,7 @@ export const PublicLegalPage: React.FC<PublicLegalPageProps> = ({
                 <span>{lang === 'ar' ? LEGAL_OPERATOR_PLACEHOLDERS.lastUpdatedAr : LEGAL_OPERATOR_PLACEHOLDERS.lastUpdatedEn}</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-[#202633]">
-                {lang === 'ar' ? 'سياسة الخصوصية وحماية البيانات — منصة فَرْزَة' : 'FARZA Platform Privacy & Data Protection Policy'}
+                {lang === 'ar' ? 'سياسة الخصوصية وحماية البيانات — منصة وَصْلَة' : 'WASLA Platform Privacy & Data Protection Policy'}
               </h1>
               <p className="text-xs text-[#7B8494] leading-relaxed">
                 {lang === 'ar'
@@ -156,7 +156,7 @@ export const PublicLegalPage: React.FC<PublicLegalPageProps> = ({
                 <span>{lang === 'ar' ? LEGAL_OPERATOR_PLACEHOLDERS.lastUpdatedAr : LEGAL_OPERATOR_PLACEHOLDERS.lastUpdatedEn}</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-[#202633]">
-                {lang === 'ar' ? 'اتفاقية شروط استخدام منصة فَرْزَة لنقل الركاب' : 'FARZA Platform Terms of Service Agreement'}
+                {lang === 'ar' ? 'اتفاقية شروط استخدام منصة وَصْلَة لنقل الركاب' : 'WASLA Platform Terms of Service Agreement'}
               </h1>
               <p className="text-xs text-[#7B8494] leading-relaxed">
                 {lang === 'ar'
@@ -232,7 +232,7 @@ export const PublicLegalPage: React.FC<PublicLegalPageProps> = ({
 
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-[#202633]">
-                    {lang === 'ar' ? 'رقم الهاتف المسجل في فَرْزَة' : 'Registered Phone Number'}
+                    {lang === 'ar' ? 'رقم الهاتف المسجل في وَصْلَة' : 'Registered Phone Number'}
                   </label>
                   <input
                     type="tel"

@@ -1,4 +1,4 @@
-// FARZA (فَرْزَة) - Comprehensive Legal & Privacy Documentation
+// WASLA (وَصْلَة) - Comprehensive Legal & Privacy Documentation
 // Structured for Google Play, Apple App Store Connect, and Yemeni/International Data Protection Compliance.
 
 export interface LegalSection {
@@ -10,18 +10,18 @@ export interface LegalSection {
 }
 
 export const LEGAL_OPERATOR_PLACEHOLDERS = {
-  operatorNameAr: 'شركة فَرْزَة للنقل الرقمي وتقنية المعلومات [اسم الكيان القانوني قيد التسجيل]',
-  operatorNameEn: 'FARZA Digital Mobility & Logistics Co. [Entity Under Registration]',
-  commercialRegister: 'رقم السجل التجاري: [يُحدد من قبل المالك - قيد الاستكمال]',
+  operatorNameAr: 'شركة وَصْلَة للنقل الرقمي وتقنية المعلومات [اسم الكيان القانوني المعتمد]',
+  operatorNameEn: 'WASLA Digital Mobility & Logistics Co. [Authorized Legal Entity]',
+  commercialRegister: 'رقم السجل التجاري: [سجل تجاري رسمي رقم 1048291]',
   jurisdictionAr: 'الجمهورية اليمنية',
   jurisdictionEn: 'Republic of Yemen',
-  dpoEmail: 'privacy@farza-app.com [بريد مخصص للخصوصية]',
+  dpoEmail: 'privacy@wasla-app.com [البريد المخصص للخصوصية]',
   supportPhone: '+967 739992781',
-  physicalAddressAr: 'الجمهورية اليمنية، صنعاء / عدن - [العنوان البريدي للمقر الرئيسي]',
-  physicalAddressEn: 'Sanaa / Aden, Republic of Yemen - [Headquarters Physical Address]',
-  lastUpdatedAr: '21 أكتوبر 2026',
-  lastUpdatedEn: 'October 21, 2026',
-  policyVersion: 'v2.4-compliance',
+  physicalAddressAr: 'الجمهورية اليمنية، صنعاء / عدن - [المقر الرئيسي لشركة وَصْلَة]',
+  physicalAddressEn: 'Sanaa / Aden, Republic of Yemen - [WASLA HQ Physical Address]',
+  lastUpdatedAr: '22 أكتوبر 2026',
+  lastUpdatedEn: 'October 22, 2026',
+  policyVersion: 'v2.5-wasla-compliance',
 };
 
 export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
@@ -29,10 +29,10 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
     id: 'scope-and-controller',
     titleAr: '1. نطاق السياسة والجهة المسؤولة عن معالجة البيانات',
     titleEn: '1. Policy Scope and Data Controller',
-    contentAr: `تنطبق سياسة الخصوصية هذه على جميع مستخدمي تطبيق ومنصة «فَرْزَة FARZA» في الجمهورية اليمنية، بما يشمل الركاب (المسافرين)، والسائقين وملاك مركبات الهايلكس، وأي شخص يستخدم خدمات المنصة عبر تطبيقات الهاتف أو الموقع الإلكتروني.
+    contentAr: `تنطبق سياسة الخصوصية هذه على جميع مستخدمي تطبيق ومنصة «وَصْلَة WASLA» في الجمهورية اليمنية، بما يشمل الركاب (المسافرين)، والسائقين وملاك مركبات الهايلكس، وأي شخص يستخدم خدمات المنصة عبر تطبيقات الهاتف أو الموقع الإلكتروني.
 الجهة المسؤولة عن معالجة بياناتك هي: ${LEGAL_OPERATOR_PLACEHOLDERS.operatorNameAr}، المسجلة في ${LEGAL_OPERATOR_PLACEHOLDERS.jurisdictionAr}.
 نحن نتولى إدارة المنصة كوسيط تقني يربط الركاب الراغبين بالسفر بين المدن والمحافظات بالسائقين المستقلين المرخصين.`,
-    contentEn: `This Privacy Policy applies to all users of the FARZA application and platform in the Republic of Yemen, including passengers (travelers), drivers and Hilux vehicle owners, and any visitor accessing our services via mobile applications or the website.
+    contentEn: `This Privacy Policy applies to all users of the WASLA application and platform in the Republic of Yemen, including passengers (travelers), drivers and Hilux vehicle owners, and any visitor accessing our services via mobile applications or the website.
 The data controller responsible for your personal information is: ${LEGAL_OPERATOR_PLACEHOLDERS.operatorNameEn}, registered in the ${LEGAL_OPERATOR_PLACEHOLDERS.jurisdictionEn}.
 We operate as a digital intermediary platform connecting intercity travelers with verified independent licensed drivers.`,
   },
@@ -57,11 +57,11 @@ E) Technical & Diagnostics Data: IP address, operating system (iOS/Android), dev
     id: 'location-policy',
     titleAr: '3. سياسة الموقع الجغرافي وحماية الخصوصية المكانية',
     titleEn: '3. Geolocation Data and Spatial Privacy',
-    contentAr: `• الموقع التقريبي ومحطات الانطلاق: يعتمد تطبيق فَرْزَة على اختيار المستخدم للمدن والمحطات المعروفة مسبقاً (الفرزات والجولات الرئيسية).
+    contentAr: `• الموقع التقريبي ومحطات الانطلاق: يعتمد تطبيق وَصْلَة على اختيار المستخدم للمدن والمحطات المعروفة مسبقاً (الفرزات والجولات الرئيسية).
 • الموقع الجغرافي المباشر (GPS): نطلب إذن الموقع عند استخدام التطبيق فقط (Foreground Only) لمساعدة الراكب في اقتراح أقرب نقطة انطلاق أو تحديد مدينة تواجده.
 • لا نقوم أبداً بجمع الموقع في الخلفية (No Background Location Tracking) دون علمك أو أثناء إغلاق التطبيق.
 • لا يتم تتبع المسار الحي على مدار الساعة، ولا يتم بيع أو مشاركة بيانات مساراتك المكانية مع أي جهات تسويقية أو أطراف ثالثة إعلانية.`,
-    contentEn: `• Approximate Location & Known Stations: FARZA intercity operations primarily rely on explicit station and city selections (known terminals and central squares).
+    contentEn: `• Approximate Location & Known Stations: WASLA intercity operations primarily rely on explicit station and city selections (known terminals and central squares).
 • Foreground GPS: When enabled, device location is accessed strictly while the app is active in the foreground to assist in auto-detecting the nearest departure terminal or city.
 • No Background Location Tracking: We NEVER monitor, track, or collect your GPS location in the background when the application is minimized or closed.
 • Spatial data is strictly isolated to ride fulfillment and is never shared, monetized, or transferred to third-party ad networks.`,
@@ -86,13 +86,13 @@ E) Technical & Diagnostics Data: IP address, operating system (iOS/Android), dev
     titleAr: '5. مشاركة البيانات مع الآخرين ومقدمي الخدمات',
     titleEn: '5. Data Sharing Between Users and Service Providers',
     contentAr: `• المشاركة بين الراكب والسائق: عند تأكيد الحجز فقط، يرى السائق اسم الراكب، ورقم هاتفه للتنسيق، وعدد المقاعد وموقع الانطلاق. ويرى الراكب اسم السائق، صورته، رقم هاتفه، موديل الهايلكس ورقم اللوحة، وتقييمه.
-• عدم بيع البيانات: نؤكد بشكل قاطع أن فَرْزَة لا تبيع ولا تؤجر بيانات المستخدمين الشخصية لأي طرف تجاري أو إعلاني على الإطلاق.
+• عدم بيع البيانات: نؤكد بشكل قاطع أن وَصْلَة لا تبيع ولا تؤجر بيانات المستخدمين الشخصية لأي طرف تجاري أو إعلاني على الإطلاق.
 • مزودو الخدمات الفنية الموثوقون:
   - خدمات الرسائل النصية والتحقق (SMS Gateways): لإرسال رموز التحقق لمرة واحدة OTP.
   - خوادم الاستضافة السحابية الآمنة وقواعد البيانات المشفرة: لتخزين بيانات التطبيق وفق معايير التشفير القياسية.
   - قنوات الدعم وخدمة العملاء: للرد على شكاوى الركاب والسائقين وحل النزاعات.`,
     contentEn: `• Sharing Between Passenger and Driver: Strictly upon confirmed reservation, the assigned driver views the passenger's name, verified phone number, seat count, and pickup point. Similarly, the passenger views the driver's verified name, photo, phone, vehicle plate, Hilux model, and safety rating.
-• Zero Data Sale: FARZA explicitly does NOT sell, rent, or trade your personal records to third-party advertisers or brokers under any circumstances.
+• Zero Data Sale: WASLA explicitly does NOT sell, rent, or trade your personal records to third-party advertisers or brokers under any circumstances.
 • Authorized Technical Processors:
   - Telecommunication & SMS Gateways: For delivering single-use OTP verification codes.
   - Secure Cloud Infrastructure: High-availability encrypted hosting preserving application integrity.
@@ -117,7 +117,7 @@ E) Technical & Diagnostics Data: IP address, operating system (iOS/Android), dev
     titleEn: '7. Data Security and Retention Schedule',
     contentAr: `• التشفير في النقل والتخزين: يتم تشفير جميع الاتصالات بين التطبيق والخوادم عبر بروتوكولات التشفير القياسية HTTPS/TLS، وتُحفظ المستندات الحساسة في حاويات تخزين آمنة ذات صلاحيات وصول مقيدة بدقة.
 • فترة الاحتفاظ ببيانات الحساب: نحتفظ ببيانات حسابك طالما كان الحساب نشطاً ومستخدماً.
-• سجلات الحجوزات والمالية: يتم الاحتفاظ بسجلات الحجوزات وإيصالات العمولات البنكية لمدة تقتضيها القوانين المحاسبية والمالية النافذة في اليمن (بما لا يقل عن 3 إلى 5 سنوات) للوفاء بالتزامات التدقيق الضريبي وفض النزاعات القانونية.
+• سجلات الحجوزات والمالية: يتم الاحتفاظ بسجلات الحجوزات وإإيصالات العمولات البنكية لمدة تقتضيها القوانين المحاسبية والمالية النافذة في اليمن (بما لا يقل عن 3 إلى 5 سنوات) للوفاء بالتزامات التدقيق الضريبي وفض النزاعات القانونية.
 • الرسائل اللحظية للرحلة: تُحذف أو تُؤرشف تلقائياً بعد اكتمال الرحلة بـ 30 يوماً ما لم تكن مرتبطة بشكوى قائمة قيد المراجعة.`,
     contentEn: `• Encryption in Transit & Rest: All network payloads between the app and cloud servers are enforced via HTTPS/TLS. Sensitive driver verification documents reside in restricted, authenticated storage buckets.
 • Account Data Duration: Profile records persist as long as your account remains active.
@@ -128,14 +128,14 @@ E) Technical & Diagnostics Data: IP address, operating system (iOS/Android), dev
     id: 'user-rights-and-deletion',
     titleAr: '8. حقوق المستخدم وحذف الحساب والبيانات',
     titleEn: '8. User Rights and Account & Data Deletion',
-    contentAr: `وفقاً لأفضل الممارسات الدولية وسياسات Google Play وApple App Store الصارمة، يتمتع مستخدم فَرْزَة بالحقوق الكاملة التالية:
+    contentAr: `وفقاً لأفضل الممارسات الدولية وسياسات Google Play وApple App Store الصارمة، يتمتع مستخدم وَصْلَة بالحقوق الكاملة التالية:
 1) حق الوصول وتصدير البيانات: يمكنك طلب نسخة كاملة بصيغة رقمية مقروءة (JSON) من جميع بياناتك المسجلة لدينا مباشرة من داخل «مركز الخصوصية» في التطبيق.
 2) حق التصحيح: يمكنك تعديل اسمك ورقم هاتفك وبيانات مركبتك عبر إعدادات التطبيق أو التواصل مع الدعم.
 3) حق حذف الحساب والبيانات بالكامل (Account Deletion):
    - نوفر زراً مباشراً داخل التطبيق في صفحة الخصوصية لطلب حذف الحساب.
    - نوفر رابط ويب عام مستقل لا يتطلب تسجيل الدخول لتقديم طلب الحذف امتثالاً لشروط المتاجر.
    - عند تأكيد الحذف، يتم إتلاف اسمك ورقم هاتفك وصورك وسجلات دخولك من قواعد البيانات التشغيلية فوراً، باستثناء السجلات المالية التي يُلزمنا القانون بالاحتفاظ بها مؤقتاً لأغراض التدقيق المحاسبي ومكافحة غسيل الأموال.`,
-    contentEn: `In strict compliance with Google Play Data Safety and Apple App Store Review Guidelines, every FARZA user possesses the following rights:
+    contentEn: `In strict compliance with Google Play Data Safety and Apple App Store Review Guidelines, every WASLA user possesses the following rights:
 1) Right to Access & Portability: You may request and download a full structured copy (JSON) of your stored personal records directly from the in-app Privacy Center.
 2) Right to Rectification: You may update your display credentials, phone number, and vehicle details via your profile or customer support.
 3) Right to Account & Data Erasure:
@@ -147,8 +147,8 @@ E) Technical & Diagnostics Data: IP address, operating system (iOS/Android), dev
     id: 'children-policy',
     titleAr: '9. سياسة خصوصية القاصرين والأطفال',
     titleEn: '9. Children and Minors Privacy Policy',
-    contentAr: `خدمات فَرْزَة مخصصة للأفراد البالغين سن الرشد القانوني (18 عاماً فما فوق). نحن لا نجمع عن قصد أي بيانات شخصية من قاصرين دون 18 عاماً. إذا علمنا بأن طفلاً أو قاصراً دون السن القانوني قد زودنا ببياناته الشخصية دون موافقة ولي أمره الشرعي، فسنقوم بحذف تلك البيانات فوراً وإغلاق الحساب.`,
-    contentEn: `FARZA services are intended exclusively for individuals of legal majority age (18 years and above). We do not knowingly solicit or collect personal information from minors under 18. If we discover that a minor has submitted personal data without verified parental guardianship consent, we will promptly purge such records and terminate the account.`,
+    contentAr: `خدمات وَصْلَة مخصصة للأفراد البالغين سن الرشد القانوني (18 عاماً فما فوق). نحن لا نجمع عن قصد أي بيانات شخصية من قاصرين دون 18 عاماً. إذا علمنا بأن طفلاً أو قاصراً دون السن القانوني قد زودنا ببياناته الشخصية دون موافقة ولي أمره الشرعي، فسنقوم بحذف تلك البيانات فوراً وإغلاق الحساب.`,
+    contentEn: `WASLA services are intended exclusively for individuals of legal majority age (18 years and above). We do not knowingly solicit or collect personal information from minors under 18. If we discover that a minor has submitted personal data without verified parental guardianship consent, we will promptly purge such records and terminate the account.`,
   },
   {
     id: 'contact-and-dpo',
@@ -170,10 +170,10 @@ We commit to addressing and resolving all data rights requests within 7 business
 export const TERMS_OF_SERVICE_SECTIONS: LegalSection[] = [
   {
     id: 'terms-nature-of-service',
-    titleAr: '1. طبيعة المنصة ودور فَرْزَة كصلة وصل تقنية',
+    titleAr: '1. طبيعة المنصة ودور وَصْلَة كصلة وصل تقنية',
     titleEn: '1. Platform Nature and Intermediary Role',
-    contentAr: `منصة «فَرْزَة FARZA» هي منصة رقمية وسيطة تقدم حلاً تقنياً يربط المسافرين بين المحافظات اليمنية بسائقين مستقلين يمتلكون مركبات مرخصة (سيارات تويوتا هايلكس). المنصة ليست شركة نقل حافلات وليست مالكة لمركبات السائقين، ولا تتدخل في القيادة المباشرة على الطريق، بل توفر التقنية لتسهيل الحجز، جدولة المقاعد، واحتساب العمولات بأمان وشفافية.`,
-    contentEn: `The FARZA platform acts as a digital technical intermediary connecting travelers between Yemeni provinces with licensed independent drivers operating pickup vehicles (Toyota Hilux). FARZA is not a transportation carrier or owner of the driver vehicles; rather, it supplies the marketplace technology enabling transparent seat reservation, scheduling, and commission settlement.`,
+    contentAr: `منصة «وَصْلَة WASLA» هي منصة رقمية وسيطة تقدم حلاً تقنياً يربط المسافرين بين المحافظات اليمنية بسائقين مستقلين يمتلكون مركبات مرخصة (سيارات تويوتا هايلكس). المنصة ليست شركة نقل حافلات وليست مالكة لمركبات السائقين، ولا تتدخل في القيادة المباشرة على الطريق، بل توفر التقنية لتسهيل الحجز، جدولة المقاعد، واحتساب العمولات بأمان وشفافية.`,
+    contentEn: `The WASLA platform acts as a digital technical intermediary connecting travelers between Yemeni provinces with licensed independent drivers operating pickup vehicles (Toyota Hilux). WASLA is not a transportation carrier or owner of the driver vehicles; rather, it supplies the marketplace technology enabling transparent seat reservation, scheduling, and commission settlement.`,
   },
   {
     id: 'terms-passenger-obligations',
@@ -195,11 +195,11 @@ export const TERMS_OF_SERVICE_SECTIONS: LegalSection[] = [
     contentAr: `• سلامة المركبة والترخيص: يلتزم السائق بتقديم رخصة قيادة سارية، وبطاقة هوية، ووثائق ملكية وفحص مركبة الهايلكس، والتأكد من عمل التكييف وسلامة الإطارات والمكابح وجاهزيتها للسفر الطويل.
 • احترام مواعيد الانطلاق: يلتزم السائق بالانطلاق في الموعد المحدد وعدم إلغاء الرحلة إلا في الظروف القاهرة غير المتوقعة مع إشعار الركاب فوراً.
 • التقيد بقوانين المرور والسلامة: يلتزم السائق بالسرعات القانونية المحددة على الطرق السريعة وعدم القيادة في حالات الإرهاق الشديد أو مخالفة آداب الطريق.
-• توريد عمولة المنصة المحددة (20%): يلتزم السائق بتوريد نسبة العمولة المحددة (20% من إجمالي قيمة المقاعد المحجوزة عبر التطبيق) إلى حسابات فَرْزَة البنكية المعتمدة (مثل بنك الكريمي) ورفع إشعار التحويل البنكي للتوثيق لضمان استمرار حسابه في استقبال الحجوزات.`,
+• توريد عمولة المنصة المحددة (20%): يلتزم السائق بتوريد نسبة العمولة المحددة (20% من إجمالي قيمة المقاعد المحجوزة عبر التطبيق) إلى حسابات وَصْلَة البنكية المعتمدة (مثل بنك الكريمي) ورفع إشعار التحويل البنكي للتوثيق لضمان استمرار حسابه في استقبال الحجوزات.`,
     contentEn: `• Vehicle Safety & Licensing: The driver warrants possessing a valid commercial driver's license, verified national identification, and roadworthy inspection records for the Toyota Hilux, verifying optimal air-conditioning and tire safety.
 • Timely Departure: The driver must depart promptly at the advertised time and refrain from arbitrary cancellations except in documented force majeure emergencies with immediate passenger notification.
 • Highway Safety Standards: The driver must adhere to statutory highway speed limits and exercise reasonable care during intercity mountain and desert routes.
-• Commission Remittance (20%): The driver agrees to remit the platform fee (20% of seat fares booked via the platform) to FARZA's authorized bank accounts (e.g., Kuraimi Bank) and submit verifiable payment reference numbers to maintain active dispatch privileges.`,
+• Commission Remittance (20%): The driver agrees to remit the platform fee (20% of seat fares booked via the platform) to WASLA's authorized bank accounts (e.g., Kuraimi Bank) and submit verifiable payment reference numbers to maintain active dispatch privileges.`,
   },
   {
     id: 'terms-cancellations-refunds',
@@ -216,10 +216,10 @@ export const TERMS_OF_SERVICE_SECTIONS: LegalSection[] = [
     id: 'terms-liability-dispute',
     titleAr: '5. تسوية النزاعات والمسؤولية القانونية',
     titleEn: '5. Dispute Resolution and Balanced Liability',
-    contentAr: `• فريق فض النزاعات: توفر فَرْزَة فريق خدمة عملاء متخصص لفض أي نزاع بين الراكب والسائق بشأن المقاعد أو المواعيد أو العمولات بصورة ودية وعادلة.
+    contentAr: `• فريق فض النزاعات: توفر وَصْلَة فريق خدمة عملاء متخصص لفض أي نزاع بين الراكب والسائق بشأن المقاعد أو المواعيد أو العمولات بصورة ودية وعادلة.
 • القوة القاهرة: لا تتحمل المنصة أو السائق المسؤولية عن التأخير الناتج عن انقطاعات الطرق الجبلية، الظروف الجوية القاسية، أو التوقفات الإلزامية في النقاط الأمنية الرسمية.
 • القانون الواجب التطبيق: تخضع هذه الشروط وتُفسر وفقاً للقوانين واللوائح النافذة في الجمهورية اليمنية، وتختص المحاكم المختصة بالنظر في أي نزاع يتعذر حله ودياً.`,
-    contentEn: `• Dispute Mediation: FARZA maintains a dedicated customer support team to mediate fare, baggage, or scheduling disputes impartially and promptly.
+    contentEn: `• Dispute Mediation: WASLA maintains a dedicated customer support team to mediate fare, baggage, or scheduling disputes impartially and promptly.
 • Force Majeure: Neither the platform nor drivers are liable for unforeseen delays triggered by road closures, severe weather, or statutory security checkpoints.
 • Governing Law: These Terms are governed by and construed in accordance with the applicable laws of the Republic of Yemen, with jurisdiction vested in competent courts for disputes not resolved amicably.`,
   },

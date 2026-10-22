@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SplashScreen } from './components/SplashScreen';
 import { MainRoleSelectScreen } from './components/MainRoleSelectScreen';
 import { Header } from './components/Header';
+import { WaslaLogo } from './components/WaslaLogo';
 import { PassengerView } from './components/PassengerView';
 import { DriverView } from './components/DriverView';
 import { AdminView } from './components/AdminView';
@@ -308,7 +309,7 @@ export default function App() {
     const newComplaint: Complaint = {
       id: `cmp-${Date.now().toString().slice(-4)}`,
       userId: 'usr-current',
-      userName: currentRole === 'driver' ? currentDriver.name : 'مستخدم فَرْزَة',
+      userName: currentRole === 'driver' ? currentDriver.name : 'مستخدم وَصْلَة',
       userRole: currentRole || 'passenger',
       issueType,
       description,
@@ -366,8 +367,8 @@ export default function App() {
             onOpenInstall={() => setShowInstallModal(true)}
             onOpenPrivacy={() => handleOpenPrivacy('privacy')}
             onOpenSettings={() => {
-              if (currentRole === 'passenger') setShowPassengerSettings(true);
-              else if (currentRole === 'driver') setShowDriverSettings(true);
+              if (currentRole === 'driver') setShowDriverSettings(true);
+              else setShowPassengerSettings(true);
             }}
             customerPhone={settings.customerServicePhone}
           />
@@ -466,7 +467,7 @@ export default function App() {
               onClose={() => setShowPrivacyModal(false)}
               userData={{
                 userId: 'usr-current',
-                userName: 'مستخدم فَرْزَة (الحالي)',
+                userName: 'مستخدم وَصْلَة (الحالي)',
                 userPhone: '771239999',
                 userRole: currentRole || 'passenger',
                 bookings,
@@ -532,10 +533,11 @@ export default function App() {
           )}
 
           {/* FOOTER WITH COMPREHENSIVE PRIVACY & LEGAL LINKS */}
-          <footer className="w-full py-6 px-4 border-t border-[#245BDB]/15 text-center text-xs text-[#7B8494] bg-[#F5F7FB]">
+          <footer className="w-full py-6 px-4 border-t border-[#0056B3]/15 text-center text-xs text-[#7B8494] bg-[#F8FAFC]">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[#202633]">FARZA · فَرْزَة</span>
+              <div className="flex items-center gap-2.5">
+                <WaslaLogo size="xs" showText={false} />
+                <span className="font-black text-[#1A2536]">WASLA · وَصْلَة</span>
                 <span>—</span>
                 <span>منصة حجز مقاعد النقل بين المدن اليمنية</span>
               </div>

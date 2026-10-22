@@ -118,8 +118,8 @@ export const PrivacyCenterModal: React.FC<PrivacyCenterModalProps> = ({
               </div>
               <p className="text-[11px] text-[#7B8494]">
                 {lang === 'ar'
-                  ? 'منصة فَرْزَة — حماية البيانات وحقوق المستخدمين وفق أعلى المعايير'
-                  : 'FARZA Platform — Protecting user privacy and compliance standards'}
+                  ? 'منصة وَصْلَة — حماية البيانات وحقوق المستخدمين وفق أعلى المعايير'
+                  : 'WASLA Platform — Protecting user privacy and compliance standards'}
               </p>
             </div>
           </div>

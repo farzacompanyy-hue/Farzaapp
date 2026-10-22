@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "FARZA فَرْزَة - منصة النقل وحجز مقاعد السفر",
-  "short_name": "فَرْزَة FARZA",
-  "description": "منصة رقمية لحجز مقاعد السفر والتنقل بين المدن في اليمن بسيارات هايلكس حديثة ومكيفة.",
+  "name": "WASLA وَصْلَة - منصة النقل وحجز مقاعد السفر",
+  "short_name": "وَصْلَة WASLA",
+  "description": "منصة رقمية لحجز مقاعد السفر والتنقل بين المدن في اليمن بسيارات حديثة ومكيفة.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
@@ -11,7 +11,7 @@
   "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
   "background_color": "#FFFFFF",
-  "theme_color": "#245BDB",
+  "theme_color": "#0056B3",
   "categories": ["travel", "transportation", "lifestyle"],
   "prefer_related_applications": false,
   "icons": [

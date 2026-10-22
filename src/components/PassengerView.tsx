@@ -18,6 +18,11 @@ import {
   CreditCard,
   ChevronDown,
   Settings,
+  ArrowLeftRight,
+  Wind,
+  Sparkles,
+  Filter,
+  Compass,
 } from 'lucide-react';
 
 interface PassengerViewProps {
@@ -44,6 +49,7 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
   const [toCity, setToCity] = useState<string>('عدن');
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-18');
   const [requiredSeats, setRequiredSeats] = useState<number>(1);
+  const [activeFilterPill, setActiveFilterPill] = useState<'all' | 'today' | 'morning' | 'ac' | 'family' | 'instant'>('all');
 
   // Booking modal state
   const [bookingTrip, setBookingTrip] = useState<Trip | null>(null);
@@ -52,12 +58,32 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
   const [bookingSeats, setBookingSeats] = useState<number>(1);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
 
-  // Filter trips based on search
+  const handleSwapCities = () => {
+    const temp = fromCity;
+    setFromCity(toCity);
+    setToCity(temp);
+  };
+
+  // Filter trips based on search and interactive pills
   const filteredTrips = trips.filter((trip) => {
     const matchFrom = !fromCity || trip.fromCity === fromCity;
     const matchTo = !toCity || trip.toCity === toCity;
     const matchSeats = trip.availableSeats >= requiredSeats;
-    return matchFrom && matchTo && matchSeats && trip.status === 'published';
+
+    let matchPill = true;
+    if (activeFilterPill === 'today') {
+      matchPill = trip.date === selectedDate || trip.date.includes('2026-10-18') || trip.date.includes('2026-10-21');
+    } else if (activeFilterPill === 'morning') {
+      matchPill = trip.departureTime.includes('ص') || trip.departureTime.includes('صباحاً');
+    } else if (activeFilterPill === 'ac') {
+      matchPill = true; // All Toyota Hilux fleet are AC-equipped
+    } else if (activeFilterPill === 'family') {
+      matchPill = trip.availableSeats >= 3;
+    } else if (activeFilterPill === 'instant') {
+      matchPill = trip.availableSeats >= 1;
+    }
+
+    return matchFrom && matchTo && matchSeats && matchPill && trip.status === 'published';
   });
 
   const handleStartBooking = (trip: Trip) => {
@@ -136,20 +162,20 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
 
       {activeTab === 'search' ? (
         <div className="space-y-8">
-          {/* SEARCH & FILTER WIDGET */}
-          <div className="relative p-6 sm:p-8 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 shadow-sm space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* GLASSMORPHISM ROUTE SEARCH & FILTER WIDGET */}
+          <div className="relative p-6 sm:p-8 rounded-3xl bg-white/95 backdrop-blur-xl border border-[#245BDB]/25 shadow-lg space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-end">
               {/* 1. Origin City */}
-              <div className="space-y-1.5">
+              <div className="lg:col-span-4 space-y-1.5">
                 <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#245BDB]" />
+                  <MapPin className="w-4 h-4 text-[#245BDB]" />
                   <span>مدينة الانطلاق</span>
                 </label>
                 <div className="relative">
                   <select
                     value={fromCity}
                     onChange={(e) => setFromCity(e.target.value)}
-                    className="w-full h-12 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-sm font-semibold focus:border-[#1769FF] outline-none shadow-xs"
+                    className="w-full h-12 px-3 rounded-2xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-sm font-bold focus:border-[#245BDB] outline-none shadow-xs"
                   >
                     <option value="">جميع المحافظات</option>
                     {cities.map((c) => (
@@ -161,17 +187,29 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                 </div>
               </div>
 
+              {/* Swap Button (Apple Circular Toggle) */}
+              <div className="lg:col-span-1 flex items-center justify-center pb-1">
+                <button
+                  type="button"
+                  onClick={handleSwapCities}
+                  className="w-11 h-11 rounded-2xl bg-[#EAF2FF] hover:bg-[#D7E7FF] text-[#245BDB] flex items-center justify-center border border-[#245BDB]/30 shadow-xs cursor-pointer hover:rotate-180 transition-transform duration-300"
+                  title="تبديل مدينة الانطلاق والوصول"
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                </button>
+              </div>
+
               {/* 2. Destination City */}
-              <div className="space-y-1.5">
+              <div className="lg:col-span-4 space-y-1.5">
                 <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#1769FF]" />
+                  <MapPin className="w-4 h-4 text-[#1769FF]" />
                   <span>مدينة الوصول</span>
                 </label>
                 <div className="relative">
                   <select
                     value={toCity}
                     onChange={(e) => setToCity(e.target.value)}
-                    className="w-full h-12 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-sm font-semibold focus:border-[#1769FF] outline-none shadow-xs"
+                    className="w-full h-12 px-3 rounded-2xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-sm font-bold focus:border-[#245BDB] outline-none shadow-xs"
                   >
                     <option value="">جميع المحافظات</option>
                     {cities.map((c) => (
@@ -183,78 +221,122 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                 </div>
               </div>
 
-              {/* 3. Date */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-[#245BDB]" />
-                  <span>تاريخ الرحلة</span>
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full h-12 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-sm font-semibold focus:border-[#1769FF] outline-none shadow-xs"
-                />
-              </div>
-
-              {/* 4. Seats Needed */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-[#245BDB]" />
-                  <span>عدد المقاعد المطلوبة</span>
-                </label>
-                <select
-                  value={requiredSeats}
-                  onChange={(e) => setRequiredSeats(Number(e.target.value))}
-                  className="w-full h-12 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-sm font-semibold focus:border-[#1769FF] outline-none shadow-xs"
-                >
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <option key={num} value={num}>
-                      {num} {num === 1 ? 'مقعد واحد' : 'مقاعد'}
-                    </option>
-                  ))}
-                </select>
+              {/* 3. Seats Needed & Date */}
+              <div className="lg:col-span-3 grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#202633] flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#245BDB]" />
+                    <span>التاريخ</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full h-12 px-2.5 rounded-2xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold focus:border-[#245BDB] outline-none shadow-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#202633] flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-[#245BDB]" />
+                    <span>المقاعد</span>
+                  </label>
+                  <select
+                    value={requiredSeats}
+                    onChange={(e) => setRequiredSeats(Number(e.target.value))}
+                    className="w-full h-12 px-2.5 rounded-2xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold focus:border-[#245BDB] outline-none shadow-xs"
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((num) => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? 'مقعد' : 'مقاعد'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* Quick route chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#DCE4F0] text-xs">
-              <span className="text-[#7B8494]">خطوط سريعة ومطلوبة:</span>
+            {/* INTERACTIVE FILTER PILLS (Apple-style Segmented Pills) */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#DCE4F0]">
+              <span className="text-xs text-[#7B8494] font-bold flex items-center gap-1 ml-1">
+                <Filter className="w-3.5 h-3.5 text-[#245BDB]" />
+                <span>تصفية سريعة:</span>
+              </span>
+
               <button
-                onClick={() => {
-                  setFromCity('صنعاء');
-                  setToCity('عدن');
-                }}
-                className="px-3 py-1.5 rounded-lg bg-[#FFFFFF] hover:bg-[#EAF2FF] border border-[#DCE4F0] text-[#202633] hover:border-[#1769FF] transition-all cursor-pointer font-medium"
+                type="button"
+                onClick={() => setActiveFilterPill('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeFilterPill === 'all'
+                    ? 'bg-[#0056B3] text-white shadow-xs'
+                    : 'bg-[#F5F7FB] text-[#202633] hover:bg-[#EAF2FF] border border-[#DCE4F0]'
+                }`}
               >
-                صنعاء ← عدن
+                جميع الرحلات
               </button>
+
               <button
-                onClick={() => {
-                  setFromCity('عدن');
-                  setToCity('تعز');
-                }}
-                className="px-3 py-1.5 rounded-lg bg-[#FFFFFF] hover:bg-[#EAF2FF] border border-[#DCE4F0] text-[#202633] hover:border-[#1769FF] transition-all cursor-pointer font-medium"
+                type="button"
+                onClick={() => setActiveFilterPill('today')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeFilterPill === 'today'
+                    ? 'bg-[#0056B3] text-white shadow-xs'
+                    : 'bg-[#F5F7FB] text-[#202633] hover:bg-[#EAF2FF] border border-[#DCE4F0]'
+                }`}
               >
-                عدن ← تعز
+                <Clock className="w-3.5 h-3.5" />
+                <span>المغادرة اليوم</span>
               </button>
+
               <button
-                onClick={() => {
-                  setFromCity('صنعاء');
-                  setToCity('إب');
-                }}
-                className="px-3 py-1.5 rounded-lg bg-[#FFFFFF] hover:bg-[#EAF2FF] border border-[#DCE4F0] text-[#202633] hover:border-[#1769FF] transition-all cursor-pointer font-medium"
+                type="button"
+                onClick={() => setActiveFilterPill('morning')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeFilterPill === 'morning'
+                    ? 'bg-[#0056B3] text-white shadow-xs'
+                    : 'bg-[#F5F7FB] text-[#202633] hover:bg-[#EAF2FF] border border-[#DCE4F0]'
+                }`}
               >
-                صنعاء ← إب
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>فترة الصباح</span>
               </button>
+
               <button
-                onClick={() => {
-                  setFromCity('مأرب');
-                  setToCity('صنعاء');
-                }}
-                className="px-3 py-1.5 rounded-lg bg-[#FFFFFF] hover:bg-[#EAF2FF] border border-[#DCE4F0] text-[#202633] hover:border-[#1769FF] transition-all cursor-pointer font-medium"
+                type="button"
+                onClick={() => setActiveFilterPill('ac')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeFilterPill === 'ac'
+                    ? 'bg-[#0056B3] text-white shadow-xs'
+                    : 'bg-[#F5F7FB] text-[#202633] hover:bg-[#EAF2FF] border border-[#DCE4F0]'
+                }`}
               >
-                مأرب ← صنعاء
+                <Wind className="w-3.5 h-3.5" />
+                <span>مكيفة بالكامل</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFilterPill('family')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeFilterPill === 'family'
+                    ? 'bg-[#0056B3] text-white shadow-xs'
+                    : 'bg-[#F5F7FB] text-[#202633] hover:bg-[#EAF2FF] border border-[#DCE4F0]'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>عوائل (3+ مقاعد)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFilterPill('instant')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeFilterPill === 'instant'
+                    ? 'bg-[#0056B3] text-white shadow-xs'
+                    : 'bg-[#F5F7FB] text-[#202633] hover:bg-[#EAF2FF] border border-[#DCE4F0]'
+                }`}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>تأكيد فوري</span>
               </button>
             </div>
           </div>
@@ -262,14 +344,14 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
           {/* AVAILABLE TRIPS LIST */}
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs text-[#7B8494]">
-              <span>الرحلات المتاحة حالياً ({filteredTrips.length} رحلة)</span>
-              <span>أسطول سيارات تويوتا هايلكس ومقاعد مؤكدة</span>
+              <span>الرحلات المتاحة ({filteredTrips.length} رحلة)</span>
+              <span>أسطول سيارات تويوتا هايلكس معتمدة</span>
             </div>
 
             {filteredTrips.length === 0 ? (
               <div className="p-12 text-center rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-3">
                 <Car className="w-12 h-12 text-[#7B8494] mx-auto opacity-50" />
-                <h3 className="text-base font-bold text-[#202633]">لا توجد رحلات مطابقة لبحثك حالياً</h3>
+                <h3 className="text-base font-bold text-[#202633]">لا توجد رحلات مطابقة لمعايير البحث حالياً</h3>
                 <p className="text-xs text-[#7B8494]">
                   جرب تغيير وجهة الوصول أو تاريخ السفر، أو تواصل مع خدمة العملاء لترتيب رحلة خاصة.
                 </p>
@@ -278,116 +360,180 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredTrips.map((trip) => {
                   const isAlmostFull = trip.availableSeats <= 2;
+                  const bookedSeatsCount = Math.max(0, trip.totalSeats - trip.availableSeats);
+                  const occupancyPercent = Math.round((trip.availableSeats / trip.totalSeats) * 100);
+
                   return (
                     <motion.div
                       key={trip.id}
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-6 rounded-3xl bg-[#FFFFFF] hover:bg-[#F5F7FB] border border-[#DCE4F0] hover:border-[#1769FF] transition-all shadow-sm hover:shadow-lg space-y-5 flex flex-col justify-between"
+                      className="p-5 sm:p-6 rounded-3xl bg-[#FFFFFF] hover:bg-[#F9FAFC] border border-[#E2E8F0] hover:border-[#0056B3]/40 transition-all shadow-md hover:shadow-xl space-y-5 flex flex-col justify-between"
                     >
-                      {/* Driver profile & Hilux header */}
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={trip.driverPhoto}
-                            alt={trip.driverName}
-                            referrerPolicy="no-referrer"
-                            className="w-12 h-12 rounded-full object-cover border-2 border-[#245BDB]/40 shadow-xs"
-                          />
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-bold text-[#202633]">{trip.driverName}</h4>
-                              {trip.isVerified && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#245BDB] bg-[#EAF2FF] px-2 py-0.5 rounded-full border border-[#245BDB]/30">
-                                  <ShieldCheck className="w-3 h-3 text-[#245BDB]" />
-                                  موثّق
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-[#7B8494] mt-0.5">
-                              <div className="flex items-center text-amber-500 font-bold">
-                                <Star className="w-3 h-3 fill-amber-500 text-amber-500 ml-0.5" />
-                                <span>{trip.driverRating.toFixed(1)}</span>
-                              </div>
-                              <span>·</span>
-                              <span>{trip.vehicleModel}</span>
-                              <span>·</span>
-                              <span className="font-mono text-[11px] font-semibold text-[#202633]">{trip.vehiclePlate}</span>
-                            </div>
-                          </div>
+                      {/* 1. VEHICLE PHOTO SHOWCASE WITH FLOATING BADGES */}
+                      <div className="relative h-44 sm:h-48 w-full rounded-2xl overflow-hidden bg-slate-900 group">
+                        <img
+                          src={trip.vehiclePhoto}
+                          alt={trip.vehicleModel}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+
+                        {/* Top Left/Right Badges */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/20">
+                          <Car className="w-3.5 h-3.5 text-[#0056B3]" />
+                          <span>{trip.vehicleModel}</span>
                         </div>
 
-                        {/* Hilux badge/preview thumbnail */}
-                        <div className="w-16 h-12 rounded-xl overflow-hidden border border-[#DCE4F0] bg-slate-900 shrink-0">
-                          <img
-                            src={trip.vehiclePhoto}
-                            alt="Toyota Hilux"
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="absolute top-3 left-3 bg-[#0056B3]/90 backdrop-blur-md text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-full shadow-sm border border-white/20">
+                          {trip.vehiclePlate}
+                        </div>
+
+                        {/* Driver lockup inside image bottom */}
+                        <div className="absolute bottom-3 right-3 left-3 flex items-center justify-between text-white">
+                          <div className="flex items-center gap-2.5">
+                            <img
+                              src={trip.driverPhoto}
+                              alt={trip.driverName}
+                              referrerPolicy="no-referrer"
+                              className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-md shrink-0"
+                            />
+                            <div>
+                              <div className="flex items-center gap-1.5 text-sm font-black text-white drop-shadow-sm">
+                                <span>{trip.driverName}</span>
+                                {trip.isVerified && (
+                                  <span className="w-4 h-4 rounded-full bg-[#0056B3] text-white flex items-center justify-center text-[10px] font-black shadow-xs">
+                                    ✓
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 text-[11px] text-amber-300 font-bold">
+                                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                <span>{trip.driverRating.toFixed(1)}</span>
+                                <span className="text-white/80 text-[10px] mr-1">سائق معتمد</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-left bg-black/50 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20">
+                            <span className="text-[10px] text-white/80 block">سعر المقعد</span>
+                            <span className="text-base font-black text-amber-300 font-mono">
+                              {trip.pricePerSeat.toLocaleString()}{' '}
+                              <span className="text-[10px] text-white">ريال</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Route Path Indicator */}
+                      {/* 2. ROUTE PATH INDICATOR */}
                       <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#1769FF]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#0056B3]" />
                             <span className="text-base font-black text-[#202633]">{trip.fromCity}</span>
                             <span className="text-xs text-[#7B8494]">({trip.fromArea})</span>
                           </div>
-                          <ArrowRight className="w-4 h-4 text-[#1769FF] rotate-180" />
+                          <ArrowRight className="w-4 h-4 text-[#0056B3] rotate-180" />
                           <div className="flex items-center gap-2">
-                            <span className="text-base font-black text-[#245BDB]">{trip.toCity}</span>
+                            <span className="text-base font-black text-[#0056B3]">{trip.toCity}</span>
                             <span className="text-xs text-[#7B8494]">({trip.toArea})</span>
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#245BDB]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#0056B3]" />
                           </div>
                         </div>
 
                         {/* Timing details */}
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#DCE4F0] text-xs text-[#7B8494]">
                           <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#245BDB]" />
-                            <span className="font-semibold text-[#202633]">{trip.departureTime}</span>
+                            <Clock className="w-3.5 h-3.5 text-[#0056B3]" />
+                            <span className="font-bold text-[#202633]">{trip.departureTime}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5 text-[#245BDB]" />
+                            <Calendar className="w-3.5 h-3.5 text-[#0056B3]" />
                             <span>{trip.date}</span>
                           </div>
+                          <div className="flex items-center gap-1 text-emerald-700 font-semibold text-[11px]">
+                            <Wind className="w-3 h-3 text-emerald-600" />
+                            <span>تكييف مركزي</span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Price & Seat Availability Footer */}
-                      <div className="flex items-center justify-between gap-4 pt-1">
-                        <div>
-                          <div className="text-[11px] text-[#7B8494]">المقاعد المتاحة</div>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-[#245BDB] text-lg font-black tabular-nums">
-                              {trip.availableSeats}
+                      {/* 3. VISUAL SEAT MAP & AVAILABILITY PROGRESS BAR */}
+                      <div className="p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#E2E8F0] space-y-2.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-[#202633] flex items-center gap-1">
+                            <Users className="w-3.5 h-3.5 text-[#0056B3]" />
+                            <span>خريطة مقاعد الهايلكس:</span>
+                          </span>
+                          <span className="text-[#0056B3] font-bold text-xs font-mono">
+                            {trip.availableSeats} من أصل {trip.totalSeats} مقاعد متاحة
+                          </span>
+                        </div>
+
+                        {/* Interactive Visual Mini-Map of 5 Seats */}
+                        <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#DCE4F0] text-[10px]">
+                          {/* Front Row (Driver + Passenger 1) */}
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-2 py-1 rounded-md bg-gray-100 text-gray-500 font-bold border border-gray-200">
+                              السائق
                             </span>
-                            <span className="text-xs text-[#7B8494]">/ {trip.totalSeats} مقاعد</span>
-                            {isAlmostFull && (
-                              <span className="text-[10px] text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md font-bold mr-1">
-                                أوشكت على الاكتمال
-                              </span>
-                            )}
+                            <span
+                              className={`px-2 py-1 rounded-md font-bold border ${
+                                trip.availableSeats >= 1
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                  : 'bg-gray-100 text-gray-400 border-gray-200 line-through'
+                              }`}
+                            >
+                              مقدمة (يمين)
+                            </span>
+                          </div>
+
+                          <span className="text-gray-300">|</span>
+
+                          {/* Rear Row (3 Passengers) */}
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3].map((seatIndex) => {
+                              const isAvailable = trip.availableSeats >= seatIndex + (trip.availableSeats > 3 ? 1 : 0);
+                              return (
+                                <span
+                                  key={seatIndex}
+                                  className={`px-1.5 py-1 rounded-md font-bold border ${
+                                    isAvailable
+                                      ? 'bg-[#EAF2FF] text-[#0056B3] border-[#0056B3]/30'
+                                      : 'bg-gray-100 text-gray-400 border-gray-200 line-through'
+                                  }`}
+                                >
+                                  خلف {seatIndex}
+                                </span>
+                              );
+                            })}
                           </div>
                         </div>
 
-                        <div className="text-left">
-                          <div className="text-[11px] text-[#7B8494]">سعر المقعد</div>
-                          <div className="text-lg font-black text-[#202633] tabular-nums">
-                            {trip.pricePerSeat.toLocaleString()}{' '}
-                            <span className="text-xs font-normal text-[#7B8494]">ريال يمني</span>
+                        {/* Progress Bar */}
+                        <div className="space-y-1">
+                          <div className="w-full h-2 rounded-full bg-[#E2E8F0] overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                isAlmostFull ? 'bg-amber-500' : 'bg-[#0056B3]'
+                              }`}
+                              style={{ width: `${occupancyPercent}%` }}
+                            />
                           </div>
+                          {isAlmostFull && (
+                            <div className="text-[10px] text-amber-700 font-bold text-left">
+                              سارع بالحجز: المقاعد على وشك النفاد
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {/* Book CTA Button */}
+                      {/* 4. BOOK CTA BUTTON */}
                       <button
                         onClick={() => handleStartBooking(trip)}
                         disabled={trip.availableSeats === 0}
-                        className="w-full h-12 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] disabled:bg-gray-200 disabled:text-gray-400 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-[#245BDB]/20 cursor-pointer active:scale-[0.98]"
+                        className="w-full h-12 rounded-xl bg-[#0056B3] hover:bg-[#1769FF] disabled:bg-gray-200 disabled:text-gray-400 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-[#0056B3]/25 cursor-pointer active:scale-[0.98]"
                       >
                         <Car className="w-4 h-4" />
                         <span>{trip.availableSeats > 0 ? 'حجز مقعد الآن' : 'المقاعد مكتملة'}</span>
@@ -663,6 +809,58 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
           </div>
         )}
       </AnimatePresence>
+
+      {/* APPLE-STYLE BOTTOM NAVIGATION BAR (Quick Switcher) */}
+      <div className="sticky bottom-4 z-30 max-w-md mx-auto w-full px-4 pt-4">
+        <div className="bg-[#FFFFFF]/90 backdrop-blur-xl border border-[#245BDB]/25 rounded-2xl shadow-xl p-1.5 flex items-center justify-around text-xs">
+          {/* 1. Explore / Search */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('search')}
+            className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 font-bold transition-all cursor-pointer ${
+              activeTab === 'search'
+                ? 'bg-[#0056B3] text-white shadow-xs'
+                : 'text-[#7B8494] hover:text-[#202633] hover:bg-[#F5F7FB]'
+            }`}
+          >
+            <Compass className="w-4 h-4" />
+            <span>الرئيسية</span>
+          </button>
+
+          {/* 2. My Bookings */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('my_bookings')}
+            className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 font-bold transition-all cursor-pointer relative ${
+              activeTab === 'my_bookings'
+                ? 'bg-[#0056B3] text-white shadow-xs'
+                : 'text-[#7B8494] hover:text-[#202633] hover:bg-[#F5F7FB]'
+            }`}
+          >
+            <Car className="w-4 h-4" />
+            <span>رحلاتي</span>
+            {bookings.length > 0 && (
+              <span className={`text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold ${
+                activeTab === 'my_bookings' ? 'bg-white text-[#0056B3]' : 'bg-[#0056B3] text-white'
+              }`}>
+                {bookings.length}
+              </span>
+            )}
+          </button>
+
+          {/* 3. Account / Settings */}
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 font-bold text-[#7B8494] hover:text-[#202633] hover:bg-[#F5F7FB] transition-all cursor-pointer"
+            >
+              <Settings className="w-4 h-4" />
+              <span>الحساب</span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

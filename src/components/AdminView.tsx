@@ -59,7 +59,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#245BDB]/15 pb-4">
         <div>
           <h2 className="text-2xl font-black text-[#202633] flex items-center gap-2">
-            <span>لوحة تحكم إدارة منصة فَرْزَة</span>
+            <span>لوحة تحكم إدارة منصة وَصْلَة</span>
             <span className="text-xs text-[#245BDB] bg-[#EAF2FF] border border-[#245BDB]/30 px-2.5 py-0.5 rounded-full font-black">
               SUPER ADMIN
             </span>
@@ -121,7 +121,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         <div className="space-y-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-5 rounded-3xl bg-[#F5F7FB] border border-[#DCE4F0] shadow-xs">
-              <div className="text-xs text-[#7B8494]">إجمالي عمولات فَرْزَة المحصلة</div>
+              <div className="text-xs text-[#7B8494]">إجمالي عمولات وَصْلَة المحصلة</div>
               <div className="text-2xl font-black text-[#245BDB] mt-2 tabular-nums">
                 {totalRevenueCommission.toLocaleString()} <span className="text-xs font-normal text-[#7B8494]">ريال</span>
               </div>
@@ -335,7 +335,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-[#245BDB]" />
-              <span>نسبة عمولة منصة فَرْزَة (%)</span>
+              <span>نسبة عمولة منصة وَصْلَة (%)</span>
             </label>
             <input
               type="number"

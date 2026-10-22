@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FarzaLogo } from './FarzaLogo';
+import { WaslaLogo } from './WaslaLogo';
 import { ASSETS } from '../data/mockData';
 import { ArrowLeft, Volume2, VolumeX } from 'lucide-react';
 
@@ -53,8 +53,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[#EAF2FF]/80 font-mono tracking-widest hidden sm:inline-block">
-            FARZA NAVIGATION SYSTEM
+          <span className="text-[11px] text-[#CFE4FF]/90 font-mono tracking-widest hidden sm:inline-block">
+            WASLA NAVIGATION SYSTEM
           </span>
           <button
             onClick={() => setSoundMuted(!soundMuted)}
@@ -365,18 +365,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               <div className="relative flex flex-col items-center p-8 sm:p-10 rounded-3xl bg-[#0F2347]/90 border border-[#1769FF]/40 backdrop-blur-xl shadow-[0_25px_60px_-15px_rgba(7,16,33,0.9)] max-w-md w-full text-center">
                 
                 {/* Luminous Glow behind Logo */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#1769FF]/25 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#007AFF]/25 rounded-full blur-3xl pointer-events-none" />
 
-                {/* FARZA Emblem Logo (Royal Blue & Electric Blue) */}
-                <FarzaLogo size="xl" showText={false} animated={true} />
+                {/* WASLA Emblem Logo (Royal Blue & Electric Blue with dynamic reflections) */}
+                <WaslaLogo size="xl" showText={false} animated={true} variant="dark" />
 
                 {/* Brand Name Typography */}
                 <div className="mt-4 flex items-center gap-3">
                   <h1 className="text-3xl sm:text-4xl font-black text-white font-['Plus_Jakarta_Sans',sans-serif] tracking-tight">
-                    FARZA
+                    WASLA
                   </h1>
-                  <span className="text-3xl sm:text-4xl font-black text-[#1769FF] font-['Cairo',sans-serif]">
-                    فَرْزَة
+                  <span className="text-3xl sm:text-4xl font-black text-[#60A5FA] font-['Cairo',sans-serif]">
+                    وَصْلَة
                   </span>
                 </div>
 
@@ -388,7 +388,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                   className="mt-3 space-y-1"
                 >
                   <p className="text-sm sm:text-base font-bold text-[#FFFFFF] drop-shadow-sm font-['Cairo',sans-serif]">
-                    "من مدينة إلى مدينة... رحلتك تبدأ من فَرْزَة"
+                    "من مدينة إلى مدينة... رحلتك تبدأ من وَصْلَة"
                   </p>
                   <p className="text-xs text-[#EAF2FF] font-medium">
                     احجز مقعدك وانطلق · منصة النقل الموثوقة في اليمن

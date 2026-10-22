@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.farza.app',
-  appName: 'FARZA - فرزة',
+  appId: 'com.wasla.app',
+  appName: 'WASLA - وصلة',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#245BDB',
+      backgroundColor: '#0056B3',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,

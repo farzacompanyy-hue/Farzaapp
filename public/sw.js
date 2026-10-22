@@ -1,4 +1,4 @@
-const CACHE_NAME = 'farza-cache-v2';
+const CACHE_NAME = 'wasla-cache-v1';
 const CORE_PRECACHE_ASSETS = [
   '/',
   '/index.html',

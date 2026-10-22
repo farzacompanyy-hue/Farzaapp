@@ -60,6 +60,22 @@ export const DriverView: React.FC<DriverViewProps> = ({
   const [totalSeats, setTotalSeats] = useState<number>(5);
   const [pricePerSeat, setPricePerSeat] = useState<number>(12000);
   const [notes, setNotes] = useState<string>('هايلكس حديثة ومكيفة، مقاعد مريحة.');
+  const [vehiclePhoto, setVehiclePhoto] = useState<string>(
+    driver.vehicle.photoUrl || 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=600&fit=crop'
+  );
+
+  const handleVehiclePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setVehiclePhoto(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Commission Payment Modal State
   const [payingBooking, setPayingBooking] = useState<Booking | null>(null);
@@ -96,7 +112,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
       vehicleModel: driver.vehicle.model,
       vehicleColor: driver.vehicle.color,
       vehiclePlate: driver.vehicle.plateNumber,
-      vehiclePhoto: driver.vehicle.photoUrl,
+      vehiclePhoto: vehiclePhoto || driver.vehicle.photoUrl,
       notes,
       status: 'published',
     });
@@ -174,6 +190,70 @@ export const DriverView: React.FC<DriverViewProps> = ({
         </div>
       </div>
 
+      {/* 4-METRIC STAT GRID (Apple iOS 18 Design Aesthetics) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* 1. Active Trips */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+          <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
+            <span>الرحلات المنشورة</span>
+            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
+              <Car className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-black text-[#202633] tabular-nums font-mono">
+            {driverTrips.length}
+          </div>
+          <div className="text-[11px] text-[#245BDB] font-semibold">رحلات معلنة نشطة</div>
+        </div>
+
+        {/* 2. Total Bookings */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+          <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
+            <span>طلبات الركاب</span>
+            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
+              <Users className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-black text-[#202633] tabular-nums font-mono">
+            {driverBookings.length}
+          </div>
+          <div className="text-[11px] text-amber-600 font-semibold">
+            {driverBookings.filter((b) => b.status === 'pending_driver').length} بانتظار الموافقة
+          </div>
+        </div>
+
+        {/* 3. Confirmed Revenue */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+          <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
+            <span>الإيراد المتوقع</span>
+            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
+              <CreditCard className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-[#202633] tabular-nums font-mono">
+            {driverBookings
+              .filter((b) => b.status === 'confirmed' || b.status === 'accepted_unpaid_commission')
+              .reduce((s, b) => s + b.totalAmount, 0)
+              .toLocaleString()}
+          </div>
+          <div className="text-[11px] text-[#7B8494] font-semibold">ريال يمني (إجمالي)</div>
+        </div>
+
+        {/* 4. Farza Commission Rate */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+          <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
+            <span>عمولة المنصة</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums font-mono">
+            {commissionRate}%
+          </div>
+          <div className="text-[11px] text-emerald-700 font-semibold">سداد آمن عبر الكريمي</div>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#245BDB]/15 pb-4">
         <div className="flex items-center gap-2">
@@ -203,7 +283,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
         </div>
 
         <div className="text-xs text-[#7B8494]">
-          نسبة عمولة منصة فَرْزَة: <strong className="text-[#245BDB] font-bold">{commissionRate}%</strong>
+          نسبة عمولة منصة وَصْلَة: <strong className="text-[#245BDB] font-bold">{commissionRate}%</strong>
         </div>
       </div>
 
@@ -268,14 +348,26 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 text-xs pt-1 text-[#202633]">
-                      <span>عدد المقاعد: <strong>{bk.seatsCount}</strong></span>
-                      <span>·</span>
-                      <span>إجمالي الأجرة: <strong>{bk.totalAmount.toLocaleString()} ريال</strong></span>
-                      <span>·</span>
-                      <span className="text-[#245BDB] bg-[#EAF2FF] px-2.5 py-1 rounded-lg border border-[#245BDB]/20 font-bold">
-                        عمولة فَرْزَة المستحقة (20%): {bk.commissionAmount.toLocaleString()} ريال
-                      </span>
+                    {/* Financial Breakdown Table */}
+                    <div className="mt-3 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/15 grid grid-cols-3 gap-2 text-center text-xs">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-[#7B8494] font-bold">إجمالي الأجرة ({bk.seatsCount} مقاعد)</span>
+                        <div className="font-black text-[#202633] font-mono text-sm">
+                          {bk.totalAmount.toLocaleString()} ريال
+                        </div>
+                      </div>
+                      <div className="space-y-0.5 border-x border-[#DCE4F0]">
+                        <span className="text-[10px] text-[#245BDB] font-bold">عمولة وَصْلَة (20%)</span>
+                        <div className="font-black text-[#245BDB] font-mono text-sm">
+                          {bk.commissionAmount.toLocaleString()} ريال
+                        </div>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-emerald-700 font-bold">صافي دخل السائق</span>
+                        <div className="font-black text-emerald-700 font-mono text-sm">
+                          {(bk.totalAmount - bk.commissionAmount).toLocaleString()} ريال
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -391,7 +483,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
               <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
                 <div className="flex items-center gap-2">
                   <Receipt className="w-5 h-5 text-[#245BDB]" />
-                  <h3 className="text-lg font-black text-[#202633]">دفع عمولة منصة فَرْزَة (20%)</h3>
+                  <h3 className="text-lg font-black text-[#202633]">دفع عمولة منصة وَصْلَة (20%)</h3>
                 </div>
                 <button
                   onClick={() => setPayingBooking(null)}
@@ -408,7 +500,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                   </div>
                   <h4 className="text-xl font-black text-[#202633]">تم إرسال إشعار الدفع بنجاح!</h4>
                   <p className="text-xs text-[#7B8494]">
-                    يتم مراجعة إيصال التحويل الآن من قِبل إدارة فَرْزَة. فور التحقق سيتم تفعيل التواصل المباشر مع الراكب فوراً.
+                    يتم مراجعة إيصال التحويل الآن من قِبل إدارة وَصْلَة. فور التحقق سيتم تفعيل التواصل المباشر مع الراكب فوراً.
                   </p>
                 </div>
               ) : (
@@ -420,7 +512,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       <span className="text-[#202633] font-bold">{payingBooking.totalAmount.toLocaleString()} ريال</span>
                     </div>
                     <div className="flex justify-between text-[#202633] font-bold text-sm pt-1 border-t border-[#DCE4F0]">
-                      <span className="text-[#245BDB]">المبلغ المطلوب دفعه لفَرْزَة (20%):</span>
+                      <span className="text-[#245BDB]">المبلغ المطلوب دفعه لوَصْلَة (20%):</span>
                       <span className="text-[#245BDB] text-base font-black">
                         {payingBooking.commissionAmount.toLocaleString()} ريال يمني
                       </span>
@@ -441,7 +533,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#7B8494]">اسم المستفيد:</span>
-                        <span className="text-[#202633] font-bold">شركة فَرْزَة للنقل الرقمي</span>
+                        <span className="text-[#202633] font-bold">شركة وَصْلَة للنقل الرقمي</span>
                       </div>
                     </div>
                   </div>
@@ -494,7 +586,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                   </div>
 
                   <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                    * ملاحظة أمنية: لا يتم اعتبار الدفع ناجحاً إلا بعد تحقق إدارة فَرْزَة وتأكيد المبلغ في الحساب البنكي.
+                    * ملاحظة أمنية: لا يتم اعتبار الدفع ناجحاً إلا بعد تحقق إدارة وَصْلَة وتأكيد المبلغ في الحساب البنكي.
                   </p>
 
                   <div className="flex items-center gap-3 pt-2">
@@ -663,6 +755,67 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     placeholder="مثال: شنط متوسطة، التزام بالموعد، مكيفة..."
                     className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
                   />
+                </div>
+
+                {/* VEHICLE PHOTO UPLOAD FIELD */}
+                <div className="space-y-2 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/20">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
+                      <Car className="w-4 h-4 text-[#245BDB]" />
+                      <span>صورة سيارة الهايلكس للرحلة</span>
+                    </label>
+                    <label
+                      htmlFor="driver-trip-vehicle-input"
+                      className="text-xs font-bold text-[#245BDB] hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>تحميل صورة من جهازك</span>
+                    </label>
+                    <input
+                      id="driver-trip-vehicle-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleVehiclePhotoUpload}
+                      className="hidden"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-24 h-16 rounded-xl overflow-hidden border border-[#245BDB]/30 bg-slate-900 shrink-0 relative shadow-xs">
+                      <img
+                        src={vehiclePhoto}
+                        alt="Vehicle preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="space-y-1 text-xs">
+                      <div className="text-[11px] text-[#7B8494]">اختر أو ارفع صورة تظهر للركاب عند استعراض الرحلة:</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setVehiclePhoto('https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=600&fit=crop')}
+                          className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold cursor-pointer transition-colors ${
+                            vehiclePhoto.includes('1559416523')
+                              ? 'bg-[#245BDB] text-white border-[#245BDB]'
+                              : 'bg-white text-[#202633] border-[#DCE4F0] hover:bg-[#EAF2FF]'
+                          }`}
+                        >
+                          هايلكس بيضاء
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVehiclePhoto('https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&fit=crop')}
+                          className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold cursor-pointer transition-colors ${
+                            vehiclePhoto.includes('1533473359')
+                              ? 'bg-[#245BDB] text-white border-[#245BDB]'
+                              : 'bg-white text-[#202633] border-[#DCE4F0] hover:bg-[#EAF2FF]'
+                          }`}
+                        >
+                          هايلكس سوداء
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-3">

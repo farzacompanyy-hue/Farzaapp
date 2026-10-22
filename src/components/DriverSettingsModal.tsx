@@ -25,6 +25,8 @@ import {
   Users,
   FileText,
   Lock,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import { Driver, Trip, Booking } from '../types';
 
@@ -52,14 +54,30 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
   customerPhone = '739992781',
 }) => {
   const [activeSection, setActiveSection] = useState<
-    'profile' | 'vehicle' | 'verification' | 'notifications' | 'trips' | 'finances' | 'ratings' | 'support' | 'appearance' | null
+    'profile' | 'vehicle' | 'verification' | 'notifications' | 'trips' | 'finances' | 'ratings' | 'support' | 'appearance' | 'privacy' | null
   >(null);
 
-  // Editable Profile
+  // Editable Profile & Photo Upload
+  const [driverPhoto, setDriverPhoto] = useState(driver.photo);
   const [driverName, setDriverName] = useState(driver.name);
   const [driverPhone, setDriverPhone] = useState(driver.phone);
   const [baseCity, setBaseCity] = useState(driver.baseCity);
   const [profileSaved, setProfileSaved] = useState(false);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setDriverPhoto(reader.result);
+          driver.photo = reader.result;
+          setProfileSaved(true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Editable Vehicle
   const [vehicleModel, setVehicleModel] = useState(driver.vehicle.model);
@@ -157,6 +175,8 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
                     ? 'التقييمات والآراء'
                     : activeSection === 'support'
                     ? 'خدمة العملاء'
+                    : activeSection === 'privacy'
+                    ? 'الخصوصية وحماية البيانات'
                     : 'المظهر واللغة'}
                 </span>
                 <span className="text-[10px] bg-[#245BDB] text-white px-2 py-0.5 rounded-full font-bold">
@@ -166,7 +186,7 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
               <p className="text-[11px] text-[#7B8494]">
                 {activeSection === null
                   ? 'إدارة حساب السائق، أسطول المركبات، وسجلات العمولات'
-                  : 'تطبيق فَرْزَة — قسم إعدادات السائق'}
+                  : 'تطبيق وَصْلَة — قسم إعدادات السائق'}
               </p>
             </div>
           </div>
@@ -194,7 +214,7 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
                 <div className="flex items-center gap-3.5">
                   <div className="relative w-14 h-14 rounded-2xl bg-[#15356B] text-white flex items-center justify-center font-bold text-xl shadow-md overflow-hidden">
                     <img
-                      src={driver.photo}
+                      src={driverPhoto}
                       alt={driver.name}
                       className="w-full h-full object-cover"
                     />
@@ -371,6 +391,26 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
                   </div>
                   <ChevronLeft className="w-4 h-4 text-[#7B8494] group-hover:text-[#245BDB]" />
                 </button>
+
+                {/* 8. Privacy & Security */}
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('privacy')}
+                  className="w-full p-4 flex items-center justify-between text-right hover:bg-[#FFFFFF] transition-colors cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Shield className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#202633] group-hover:text-[#245BDB] transition-colors">
+                        الخصوصية وحماية البيانات
+                      </div>
+                      <div className="text-[11px] text-[#7B8494]">أذونات الموقع، حماية الحساب، وحذف الحساب</div>
+                    </div>
+                  </div>
+                  <ChevronLeft className="w-4 h-4 text-[#7B8494] group-hover:text-[#245BDB]" />
+                </button>
               </div>
 
               {/* Bottom Actions */}
@@ -399,6 +439,46 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
           {activeSection === 'profile' && (
             <form onSubmit={handleProfileSave} className="space-y-4">
               <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-4">
+                {/* Driver Photo Upload */}
+                <div className="flex items-center gap-4 pb-3 border-b border-[#DCE4F0]">
+                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-[#245BDB] bg-[#15356B] shadow-sm shrink-0">
+                    <img
+                      src={driverPhoto}
+                      alt={driverName}
+                      className="w-full h-full object-cover"
+                    />
+                    <label
+                      htmlFor="driver-avatar-input"
+                      className="absolute inset-0 bg-black/40 hover:bg-black/60 flex items-center justify-center cursor-pointer transition-colors text-white"
+                      title="تحميل صورة شخصية جديدة"
+                    >
+                      <Camera className="w-5 h-5" />
+                    </label>
+                    <input
+                      id="driver-avatar-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#202633]">الصورة الشخصية للسائق</span>
+                      <label
+                        htmlFor="driver-avatar-input"
+                        className="text-[11px] font-bold text-[#245BDB] hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <Upload className="w-3 h-3" />
+                        <span>تحديث الصورة</span>
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-[#7B8494] leading-relaxed">
+                      تظهر صورتك الشخصية للركاب في بطاقات الرحلات وعلى شارة السائق الموثّق.
+                    </p>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[#7B8494]">اسم السائق</label>
                   <input
@@ -445,50 +525,6 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
                     </span>
                   )}
                 </div>
-              </div>
-
-              {/* Account Deletion Request for Driver */}
-              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 space-y-2 text-xs">
-                <h4 className="font-bold text-red-900">طلب حذف حساب السائق</h4>
-                <p className="text-[11px] text-red-700 leading-relaxed">
-                  يتطلب حذف حساب السائق تسوية كافة العمولات المستحقة للرحلات المنفذة أولاً لضمان عدم وجود مطالبات مالية معلقة.
-                </p>
-                {!showDeleteConfirm ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold cursor-pointer"
-                  >
-                    بدء إجراءات حذف الحساب
-                  </button>
-                ) : (
-                  <div className="space-y-2 pt-2 border-t border-red-200">
-                    <input
-                      type="tel"
-                      dir="ltr"
-                      placeholder={`أدخل رقمك للتأكيد: ${driver.phone}`}
-                      value={deletePhoneInput}
-                      onChange={(e) => setDeletePhoneInput(e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg bg-white border border-red-300 font-mono text-xs outline-none"
-                    />
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleExecuteDelete}
-                        className="py-2 px-3 rounded-lg bg-red-700 text-white font-bold cursor-pointer"
-                      >
-                        تأكيد طلب الإلغاء
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="py-2 px-3 rounded-lg bg-white border border-gray-300 font-bold text-gray-700 cursor-pointer"
-                      >
-                        إلغاء
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </form>
           )}
@@ -613,7 +649,7 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
                 </div>
 
                 <div className="p-3 rounded-xl bg-[#EAF2FF] border border-[#245BDB]/20 text-[11px] text-[#15356B] leading-relaxed">
-                  <strong>تنبيه الأمان:</strong> لا يمتلك السائق صلاحية تغيير حالة توثيق حسابه بنفسه. تخضع جميع المستندات لفحص وتدقيق إدارة العمليات المركزية لمنصة فَرْزَة لضمان أمان المسافرين.
+                  <strong>تنبيه الأمان:</strong> لا يمتلك السائق صلاحية تغيير حالة توثيق حسابه بنفسه. تخضع جميع المستندات لفحص وتدقيق إدارة العمليات المركزية لمنصة وَصْلَة لضمان أمان المسافرين.
                 </div>
               </div>
             </div>
@@ -806,6 +842,99 @@ export const DriverSettingsModal: React.FC<DriverSettingsModalProps> = ({
                   onChange={(e) => setNotifyChatSound(e.target.checked)}
                   className="w-4 h-4 text-[#245BDB] rounded cursor-pointer"
                 />
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* SECTION 8: PRIVACY & DATA PROTECTION */}
+          {/* ======================================================== */}
+          {activeSection === 'privacy' && (
+            <div className="space-y-6">
+              {/* Quick Launch into full Privacy Center */}
+              <div className="p-4 rounded-2xl bg-[#EAF2FF] border border-[#245BDB]/30 flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-[#15356B]">مركز الخصوصية وحماية البيانات</h4>
+                  <p className="text-[11px] text-[#7B8494] leading-relaxed">
+                    استعراض الوثائق الرسمية الكاملة، بنود الامتثال، والتواصل مع مسؤول الحماية (DPO).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onOpenPrivacyCenter('privacy')}
+                  className="px-4 py-2 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-bold text-xs cursor-pointer whitespace-nowrap shadow-xs transition-colors"
+                >
+                  فتح المركز
+                </button>
+              </div>
+
+              {/* Driver Privacy & Security Principles */}
+              <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-2.5 text-xs">
+                <h4 className="font-bold text-[#202633]">معايير أمان بيانات السائق</h4>
+                <div className="space-y-2 text-[#7B8494]">
+                  <p className="leading-relaxed">
+                    • يتم تشفير صور رخص القيادة ووثائق المركبة وفق بروتوكولات حماية بيانات النقل.
+                  </p>
+                  <p className="leading-relaxed">
+                    • رقم هاتف السائق يظهر فقط للركاب الذين لديهم حجز مؤكد ومقبول على نفس الرحلة.
+                  </p>
+                  <p className="leading-relaxed">
+                    • لا يتم تخزين أو تتبع الموقع الجغرافي خارج مسار الرحلة المعلنة.
+                  </p>
+                </div>
+              </div>
+
+              {/* CRITICAL REQUIREMENT: ACCOUNT DELETION IS STRICTLY LOCATED INSIDE SETTINGS -> PRIVACY */}
+              <div className="p-5 rounded-3xl bg-red-50 border border-red-200 space-y-3">
+                <div className="flex items-center gap-2.5 text-red-700">
+                  <AlertTriangle className="w-5 h-5 shrink-0" />
+                  <h4 className="text-sm font-black">حذف حساب السائق وإنهاء التسجيل</h4>
+                </div>
+                <p className="text-xs text-red-800 leading-relaxed">
+                  يتطلب حذف حساب السائق تسوية كافة العمولات المستحقة للرحلات المنفذة أولاً لضمان عدم وجود مطالبات مالية معلقة. حذف الحساب نهائي وسيؤدي لإلغاء شارة التوثيق ومسح السجل.
+                </p>
+
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition-all shadow-xs"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>طلب حذف حساب السائق نهائياً</span>
+                  </button>
+                ) : (
+                  <form onSubmit={handleExecuteDelete} className="space-y-3 pt-2 border-t border-red-200">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-red-900">
+                        لتأكيد الحذف، أدخل رقم هاتفك المسجل ({driver.phone}):
+                      </label>
+                      <input
+                        type="tel"
+                        dir="ltr"
+                        placeholder={driver.phone}
+                        value={deletePhoneInput}
+                        onChange={(e) => setDeletePhoneInput(e.target.value)}
+                        className="w-full h-10 px-3 rounded-lg bg-white border border-red-300 font-mono text-xs outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="py-2.5 px-4 rounded-xl bg-red-700 hover:bg-red-800 text-white font-black text-xs cursor-pointer shadow-sm"
+                      >
+                        تأكيد طلب الحذف النهائي
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="py-2.5 px-4 rounded-xl bg-white border border-gray-300 font-bold text-gray-700 text-xs cursor-pointer"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
           )}

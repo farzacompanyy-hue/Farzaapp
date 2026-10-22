@@ -37,8 +37,8 @@ export const CustomerSupportModal: React.FC<CustomerSupportModalProps> = ({
       >
         <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
           <div className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-[#245BDB]" />
-            <h3 className="text-lg font-black text-[#202633]">خدمة عملاء فَرْزَة</h3>
+            <HelpCircle className="w-5 h-5 text-[#0056B3]" />
+            <h3 className="text-lg font-black text-[#1A2536]">خدمة عملاء وَصْلَة</h3>
           </div>
           <button
             onClick={onClose}
@@ -50,12 +50,12 @@ export const CustomerSupportModal: React.FC<CustomerSupportModalProps> = ({
 
         {submitted ? (
           <div className="p-8 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-[#EAF2FF] border border-[#245BDB] text-[#245BDB] flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-full bg-[#EAF2FF] border border-[#0056B3] text-[#0056B3] flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h4 className="text-lg font-bold text-[#202633]">تم استلام رسالتك بنجاح</h4>
+            <h4 className="text-lg font-bold text-[#1A2536]">تم استلام رسالتك بنجاح</h4>
             <p className="text-xs text-[#7B8494]">
-              فريق دعم فَرْزَة متاح لخدمتك على مدار الساعة وسيقوم بالرد الفوري عليك.
+              فريق دعم وَصْلَة متاح لخدمتك على مدار الساعة وسيقوم بالرد الفوري عليك.
             </p>
           </div>
         ) : (

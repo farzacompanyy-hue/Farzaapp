@@ -68,7 +68,7 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
   // Profile State
   const [name, setName] = useState('محمد صالح القدسي');
   const [phone, setPhone] = useState('773456789');
-  const [email, setEmail] = useState('m.alqudsi@farza.app');
+  const [email, setEmail] = useState('m.alqudsi@wasla.app');
   const [avatar, setAvatar] = useState<string>(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'
   );
@@ -102,7 +102,7 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
 
   // User Preferences
   const [preferences, setPreferences] = useState<UserPreferences>(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('farza_user_preferences') : null;
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('wasla_user_preferences') : null;
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -128,7 +128,7 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
     const updated = { ...preferences, ...newPrefs };
     setPreferences(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('farza_user_preferences', JSON.stringify(updated));
+      localStorage.setItem('wasla_user_preferences', JSON.stringify(updated));
     }
   };
 
@@ -221,7 +221,7 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
               <p className="text-[11px] text-[#7B8494]">
                 {activeSection === null
                   ? 'تحكّم في خيارات حسابك وخصوصيتك وإشعاراتك بكل سهولة'
-                  : 'تطبيق فَرْزَة — إعدادات المستخدم الشخصية'}
+                  : 'تطبيق وَصْلَة — إعدادات المستخدم الشخصية'}
               </p>
             </div>
           </div>
@@ -634,74 +634,6 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
                   </div>
                 </div>
               </div>
-
-              {/* CRITICAL: ACCOUNT DELETION MOVED TO CUSTOMER SETTINGS HERE */}
-              <div className="p-5 rounded-3xl bg-red-50 border border-red-200 space-y-3">
-                <div className="flex items-center gap-2.5 text-red-700">
-                  <AlertTriangle className="w-5 h-5 shrink-0" />
-                  <h4 className="text-sm font-black">منطقة إدارة الحساب الحساسة — حذف الحساب</h4>
-                </div>
-                <p className="text-xs text-red-800 leading-relaxed">
-                  حذف الحساب نهائي وسيؤدي إلى إزالة ملفك الشخصي وسجل الرحلات وأرقام التواصل من التطبيق بصورة دائمة.
-                </p>
-
-                {!showDeleteConfirm ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition-all shadow-xs"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>طلب حذف حسابي نهائياً</span>
-                  </button>
-                ) : (
-                  <form onSubmit={handleExecuteDeleteAccount} className="space-y-3 pt-2 border-t border-red-200">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-red-900">
-                        لتأكيد الحذف، اكتب رقم هاتفك المسجل ({phone}):
-                      </label>
-                      <input
-                        type="tel"
-                        dir="ltr"
-                        placeholder={phone}
-                        value={deleteInputPhone}
-                        onChange={(e) => setDeleteInputPhone(e.target.value)}
-                        className="w-full h-10 px-3 rounded-lg bg-white border border-red-300 text-xs font-mono focus:border-red-600 outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-red-900">سبب الحذف:</label>
-                      <select
-                        value={deleteReason}
-                        onChange={(e) => setDeleteReason(e.target.value)}
-                        className="w-full h-10 px-3 rounded-lg bg-white border border-red-300 text-xs font-medium focus:border-red-600 outline-none"
-                      >
-                        <option value="no_longer_traveling">لم أعد بحاجة للسفر بين المحافظات</option>
-                        <option value="privacy_concerns">مخاوف تتعلق بالخصوصية</option>
-                        <option value="alternative_service">استخدام وسيلة نقل أخرى</option>
-                        <option value="other">أسباب أخرى</option>
-                      </select>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="submit"
-                        className="py-2.5 px-4 rounded-xl bg-red-700 hover:bg-red-800 text-white font-black text-xs cursor-pointer shadow-sm"
-                      >
-                        تأكيد الحذف النهائي وفقدان البيانات
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="py-2.5 px-4 rounded-xl bg-white text-gray-700 text-xs font-bold border border-gray-300 cursor-pointer"
-                      >
-                        تراجع
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
             </div>
           )}
 
@@ -772,13 +704,81 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
                     <Smartphone className="w-4 h-4 text-[#245BDB]" />
                     <div>
                       <div className="font-bold text-[#202633]">هذا الجهاز (الجلسة الحالية)</div>
-                      <div className="text-[10px] text-[#7B8494]">نشط الآن · متصفح الويب / تطبيق فَرْزَة</div>
+                      <div className="text-[10px] text-[#7B8494]">نشط الآن · متصفح الويب / تطبيق وَصْلَة</div>
                     </div>
                   </div>
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
                     متصل
                   </span>
                 </div>
+              </div>
+
+              {/* CRITICAL REQUIREMENT: ACCOUNT DELETION IS STRICTLY LOCATED INSIDE SETTINGS -> PRIVACY */}
+              <div className="p-5 rounded-3xl bg-red-50 border border-red-200 space-y-3">
+                <div className="flex items-center gap-2.5 text-red-700">
+                  <AlertTriangle className="w-5 h-5 shrink-0" />
+                  <h4 className="text-sm font-black">حذف الحساب والبيانات نهائياً</h4>
+                </div>
+                <p className="text-xs text-red-800 leading-relaxed">
+                  حذف الحساب نهائي وسيؤدي إلى إزالة ملفك الشخصي وسجل الرحلات وأرقام التواصل من التطبيق بصورة دائمة وفق المعايير العالمية لحماية البيانات.
+                </p>
+
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition-all shadow-xs"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>طلب حذف حسابي نهائياً</span>
+                  </button>
+                ) : (
+                  <form onSubmit={handleExecuteDeleteAccount} className="space-y-3 pt-2 border-t border-red-200">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-red-900">
+                        لتأكيد الحذف، اكتب رقم هاتفك المسجل ({phone}):
+                      </label>
+                      <input
+                        type="tel"
+                        dir="ltr"
+                        placeholder={phone}
+                        value={deleteInputPhone}
+                        onChange={(e) => setDeleteInputPhone(e.target.value)}
+                        className="w-full h-10 px-3 rounded-lg bg-white border border-red-300 text-xs font-mono focus:border-red-600 outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-red-900">سبب الحذف:</label>
+                      <select
+                        value={deleteReason}
+                        onChange={(e) => setDeleteReason(e.target.value)}
+                        className="w-full h-10 px-3 rounded-lg bg-white border border-red-300 text-xs font-medium focus:border-red-600 outline-none"
+                      >
+                        <option value="no_longer_traveling">لم أعد بحاجة للسفر بين المحافظات</option>
+                        <option value="privacy_concerns">مخاوف تتعلق بالخصوصية</option>
+                        <option value="alternative_service">استخدام وسيلة نقل أخرى</option>
+                        <option value="other">أسباب أخرى</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="py-2.5 px-4 rounded-xl bg-red-700 hover:bg-red-800 text-white font-black text-xs cursor-pointer shadow-sm"
+                      >
+                        تأكيد الحذف النهائي وفقدان البيانات
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="py-2.5 px-4 rounded-xl bg-white text-gray-700 text-xs font-bold border border-gray-300 cursor-pointer"
+                      >
+                        تراجع
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
           )}
@@ -1109,7 +1109,7 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
                   <span className="font-mono font-bold text-[#245BDB] text-xs">{customerPhone}</span>
                 </div>
                 <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                  فريق دعم فَرْزَة متاح على مدار الساعة للمساعدة في أي استفسار أو مشكلة أثناء السفر.
+                  فريق دعم وَصْلَة متاح على مدار الساعة للمساعدة في أي استفسار أو مشكلة أثناء السفر.
                 </p>
                 <div className="pt-1 flex items-center gap-2">
                   <a

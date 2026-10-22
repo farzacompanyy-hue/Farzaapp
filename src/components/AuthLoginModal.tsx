@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FarzaLogo } from './FarzaLogo';
+import { WaslaLogo } from './WaslaLogo';
 import {
   Smartphone,
   ArrowLeft,
@@ -84,7 +84,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       onSuccess(role, {
         name: role === 'driver' ? 'أحمد الشامي (Google)' : 'محمد صالح (Google)',
         phone: '771239999',
-        email: 'user.farza@gmail.com',
+        email: 'user.wasla@gmail.com',
         provider: 'google',
       });
     }, 1200);
@@ -101,7 +101,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       setIsLoading(false);
       setActiveProvider(null);
       onSuccess(role, {
-        name: role === 'driver' ? 'كابتن فَرْزَة (Apple)' : 'مسافر فَرْزَة (Apple)',
+        name: role === 'driver' ? 'كابتن وَصْلَة (Apple)' : 'مسافر وَصْلَة (Apple)',
         phone: '773456789',
         email: 'privaterelay@appleid.apple.com',
         provider: 'apple',
@@ -176,13 +176,13 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
         {/* Top Header Bar */}
         <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
           <div className="flex items-center gap-3">
-            <FarzaLogo size="sm" showText={false} />
+            <WaslaLogo size="sm" showText={false} />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-base font-black text-[#202633] font-['Plus_Jakarta_Sans',sans-serif]">FARZA</span>
-                <span className="text-base font-black text-[#245BDB] font-['Cairo',sans-serif]">فَرْزَة</span>
+                <span className="text-base font-black text-[#1A2536] font-['Plus_Jakarta_Sans',sans-serif]">WASLA</span>
+                <span className="text-base font-black text-[#0056B3] font-['Cairo',sans-serif]">وَصْلَة</span>
               </div>
-              <span className="text-[11px] font-bold text-[#1769FF]">
+              <span className="text-[11px] font-bold text-[#0056B3]">
                 {role === 'passenger' ? 'تسجيل دخول الراكب' : 'تسجيل دخول السائق'}
               </span>
             </div>
@@ -201,7 +201,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
           <div className="space-y-6">
             <div className="text-center space-y-1.5">
               <h3 className="text-xl sm:text-2xl font-black text-[#202633]">
-                مرحبًا بك في فَرْزَة
+                مرحبًا بك في وَصْلَة
               </h3>
               <p className="text-xs sm:text-sm text-[#7B8494] max-w-xs mx-auto leading-relaxed">
                 سافر بين المحافظات اليمنية بأمان أو أدر أسطول رحلاتك وعمولاتك بكل موثوقية.
@@ -311,7 +311,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                 >
                   سياسة الخصوصية
                 </button>
-                <span> لمنصة فَرْزَة.</span>
+                <span> لمنصة وَصْلَة.</span>
               </div>
 
               <div className="flex items-center justify-center gap-3 text-[10px] text-[#7B8494]">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FarzaLogo } from './FarzaLogo';
+import { WaslaLogo } from './WaslaLogo';
 import { Play, PhoneCall, Smartphone, Settings } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -25,19 +25,19 @@ export const Header: React.FC<HeaderProps> = ({
   customerPhone = '739992781',
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full h-16 bg-[#FFFFFF]/95 backdrop-blur-xl border-b border-[#245BDB]/15 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 shadow-xs">
-      {/* Zone 1: Brand Wordmark + Logo */}
+    <header className="sticky top-0 z-40 w-full h-16 bg-[#FFFFFF]/95 backdrop-blur-xl border-b border-[#0056B3]/15 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 shadow-xs">
+      {/* Zone 1: Brand Wordmark + Wasla SVG Logo */}
       <div
         onClick={() => onSelectRole(null)}
-        className="flex items-center gap-3 cursor-pointer shrink-0 group"
+        className="flex items-center gap-2.5 cursor-pointer shrink-0 group"
       >
-        <FarzaLogo size="sm" showText={false} />
+        <WaslaLogo size="sm" showText={false} />
         <div className="flex items-center gap-2">
-          <span className="text-xl font-black text-[#202633] font-['Plus_Jakarta_Sans',sans-serif] tracking-tight group-hover:text-[#245BDB] transition-colors">
-            FARZA
+          <span className="text-xl font-black text-[#1A2536] font-['Plus_Jakarta_Sans',sans-serif] tracking-tight group-hover:text-[#0056B3] transition-colors">
+            WASLA
           </span>
-          <span className="text-xl font-black text-[#245BDB] font-['Cairo',sans-serif]">
-            فَرْزَة
+          <span className="text-xl font-black text-[#0056B3] font-['Cairo',sans-serif]">
+            وَصْلَة
           </span>
         </div>
       </div>
@@ -95,9 +95,9 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onReplayIntro}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#202633] text-xs font-medium border border-[#DCE4F0] hover:border-[#245BDB]/40 transition-all cursor-pointer whitespace-nowrap"
-          title="مشاهدة مقدمة فَرْزَة التفاعلية"
+          title="مشاهدة مقدمة وَصْلَة التفاعلية"
         >
-          <Play className="w-3.5 h-3.5 text-[#245BDB] fill-[#245BDB]/20" />
+          <Play className="w-3.5 h-3.5 text-[#0056B3] fill-[#0056B3]/20" />
           <span className="hidden sm:inline">المقدمة</span>
         </button>
 

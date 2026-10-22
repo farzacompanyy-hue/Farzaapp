@@ -15,7 +15,7 @@ export const INITIAL_SETTINGS: SystemSettings = {
   splashAdTitle: '',
   splashAdDescription: '',
   splashAdImage: '',
-  appSlogan: 'من مدينة إلى مدينة... رحلتك تبدأ من فَرْزَة',
+  appSlogan: 'من مدينة إلى مدينة... رحلتك تبدأ من وَصْلَة',
 };
 
 export const YEMEN_CITIES: City[] = [

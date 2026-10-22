@@ -66,7 +66,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
         {/* Security Notification Banner */}
         <div className="px-4 py-2 bg-[#EAF2FF] border-b border-[#245BDB]/20 text-[11px] text-[#15356B] flex items-center justify-between font-bold">
-          <span>✓ تم تفعيل المحادثة رسمياً بعد سداد وتوثيق عمولة فَرْزَة.</span>
+          <span>✓ تم تفعيل المحادثة رسمياً بعد سداد وتوثيق عمولة وَصْلَة.</span>
         </div>
 
         {/* Messages Stream */}
