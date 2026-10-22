@@ -1,11 +1,11 @@
-const CACHE_NAME = 'wasla-cache-v1';
+const CACHE_NAME = 'wasla-cache-v3';
 const CORE_PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/apple-touch-icon.png',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/manifest.json?v=3',
+  '/apple-touch-icon.png?v=3',
+  '/icon-192.png?v=3',
+  '/icon-512.png?v=3',
 ];
 
 // Install: precache the core application shell

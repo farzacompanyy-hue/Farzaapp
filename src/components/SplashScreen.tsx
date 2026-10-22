@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WaslaLogo } from './WaslaLogo';
 import { ASSETS } from '../data/mockData';
@@ -11,21 +11,31 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({
   onComplete,
-  durationSeconds = 3.5,
+  durationSeconds = 10,
 }) => {
   const [stage, setStage] = useState<number>(0);
   const [soundMuted, setSoundMuted] = useState<boolean>(true);
+  const completedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStage(1), 250);
-    const t2 = setTimeout(() => setStage(2), 900);
-    const t3 = setTimeout(() => setStage(3), 1700);
-    const t4 = setTimeout(() => setStage(4), 2400);
+    // 10-second cinematic progression timeline
+    // 0.0s - 0.5s: Stage 0 (ambient background fade-in)
+    // 0.5s - 2.0s: Stage 1 (Yemen digital satellite map & radar grid scale in)
+    // 2.0s - 5.0s: Stage 2 (Route drawn from Sana'a through Dhamar, Ibb, Taiz to Aden)
+    // 5.0s - 7.5s: Stage 3 (Black Toyota Hilux cruises the electric blue highway)
+    // 7.5s - 10.0s: Stage 4 (Wasla official emblem, wordmark, and slogan reveal)
+    const t1 = setTimeout(() => setStage(1), 500);
+    const t2 = setTimeout(() => setStage(2), 2000);
+    const t3 = setTimeout(() => setStage(3), 5000);
+    const t4 = setTimeout(() => setStage(4), 7500);
 
-    const totalTime = durationSeconds * 1000;
+    const totalTimeMs = durationSeconds * 1000;
     const tEnd = setTimeout(() => {
-      onComplete();
-    }, Math.max(totalTime, 3500));
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onComplete();
+      }
+    }, totalTimeMs);
 
     return () => {
       clearTimeout(t1);
@@ -37,16 +47,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   }, [durationSeconds, onComplete]);
 
   const handleSkip = () => {
-    onComplete();
+    if (!completedRef.current) {
+      completedRef.current = true;
+      onComplete();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-[#0C1A33] flex flex-col items-center justify-center select-none text-white">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6, ease: 'easeInOut' }}
+      className="fixed inset-0 z-50 overflow-hidden bg-[#0C1A33] flex flex-col items-center justify-center select-none text-white"
+    >
+      {/* Top Global 10-Second Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-[#15356B]/60 z-50 overflow-hidden">
+        <motion.div
+          className="h-full bg-gradient-to-r from-[#0056B3] via-[#007AFF] to-[#60A5FA]"
+          initial={{ width: '0%' }}
+          animate={{ width: '100%' }}
+          transition={{ duration: durationSeconds, ease: 'linear' }}
+        />
+      </div>
+
       {/* Top Controls: Skip & Audio */}
       <div className="absolute top-6 left-6 right-6 z-40 flex items-center justify-between">
         <button
           onClick={handleSkip}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#15356B]/90 hover:bg-[#245BDB] text-white text-xs font-semibold backdrop-blur-md border border-[#1769FF]/40 transition-all cursor-pointer shadow-lg group"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#15356B]/90 hover:bg-[#245BDB] text-white text-xs font-semibold backdrop-blur-md border border-[#1769FF]/40 transition-all cursor-pointer shadow-lg group active:scale-95"
         >
           <span>تخطي المقدمة</span>
           <ArrowLeft className="w-3.5 h-3.5 text-[#EAF2FF] group-hover:-translate-x-1 transition-transform" />
@@ -58,7 +87,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           </span>
           <button
             onClick={() => setSoundMuted(!soundMuted)}
-            className="w-9 h-9 rounded-full bg-[#15356B]/90 flex items-center justify-center text-[#EAF2FF] hover:text-white border border-[#1769FF]/30 transition-colors"
+            className="w-9 h-9 rounded-full bg-[#15356B]/90 flex items-center justify-center text-[#EAF2FF] hover:text-white border border-[#1769FF]/30 transition-colors cursor-pointer"
             title={soundMuted ? 'كتم الصوت' : 'تشغيل الصوت'}
           >
             {soundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#1769FF]" />}
@@ -70,9 +99,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Background Ambient Glow Gradients (Navy & Electric Blue) */}
         <div className="absolute inset-0 bg-radial from-[#15356B]/60 via-[#0C1A33] to-[#071021] opacity-95" />
-        
+
         {/* Modern GPS Navigation Grid Overlay */}
-        <div 
+        <div
           className="absolute inset-0 opacity-15 pointer-events-none"
           style={{
             backgroundImage: `
@@ -80,7 +109,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               linear-gradient(to bottom, rgba(23, 105, 255, 0.3) 1px, transparent 1px)
             `,
             backgroundSize: '40px 40px',
-            maskImage: 'radial-gradient(circle at center, black 40%, transparent 80%)'
+            maskImage: 'radial-gradient(circle at center, black 40%, transparent 80%)',
           }}
         />
 
@@ -88,7 +117,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 1.08 }}
           animate={{ opacity: stage >= 1 ? 0.45 : 0, scale: 1 }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
         >
           <img
@@ -177,11 +206,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               strokeLinecap="round"
               filter="url(#routeElectricGlow)"
               initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ 
-                pathLength: stage >= 2 ? 1 : 0, 
-                opacity: stage >= 2 ? 1 : 0 
+              animate={{
+                pathLength: stage >= 2 ? 1 : 0,
+                opacity: stage >= 2 ? 1 : 0,
               }}
-              transition={{ duration: 1.4, ease: 'easeInOut' }}
+              transition={{ duration: 2.8, ease: 'easeInOut' }}
             />
 
             {/* Dashed Center Road Stripe */}
@@ -192,7 +221,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               strokeWidth="1.5"
               strokeDasharray="8 8"
               opacity={stage >= 2 ? 0.85 : 0}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.6 }}
             />
 
             {/* Departure City Node (صنعاء / Sana'a) */}
@@ -261,15 +290,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             {stage >= 3 && (
               <motion.g
                 initial={{ offsetDistance: '0%', opacity: 0, scale: 0.8 }}
-                animate={{ 
-                  offsetDistance: ['5%', '65%'], 
+                animate={{
+                  offsetDistance: ['5%', '65%'],
                   opacity: [0, 1, 1],
-                  scale: [0.8, 1, 1]
+                  scale: [0.8, 1, 1],
                 }}
-                transition={{ 
-                  duration: 1.8, 
-                  ease: 'easeOut',
-                  times: [0, 0.2, 1]
+                transition={{
+                  duration: 2.5,
+                  ease: 'easeInOut',
+                  times: [0, 0.2, 1],
                 }}
                 style={{
                   offsetPath: `path('M 140 370 C 260 320, 290 280, 390 270 C 490 260, 520 180, 640 130')`,
@@ -300,9 +329,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                     opacity="0.9"
                   />
                   <polygon points="35,4 51,4 57,8 29,8" fill="#EAF2FF" opacity="0.4" />
-                  
+
                   <rect x="68" y="11" width="3" height="15" rx="1.5" fill="#245BDB" />
-                  
+
                   {/* Headlights in bright electric blue/white */}
                   <circle cx="69" cy="13" r="2.5" fill="#EAF2FF" filter="url(#routeElectricGlow)" />
                   <circle cx="69" cy="23" r="2.5" fill="#EAF2FF" filter="url(#routeElectricGlow)" />
@@ -363,11 +392,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             >
               {/* Glassmorphic Backdrop in Royal Blue / Dark Navy */}
               <div className="relative flex flex-col items-center p-8 sm:p-10 rounded-3xl bg-[#0F2347]/90 border border-[#1769FF]/40 backdrop-blur-xl shadow-[0_25px_60px_-15px_rgba(7,16,33,0.9)] max-w-md w-full text-center">
-                
                 {/* Luminous Glow behind Logo */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#007AFF]/25 rounded-full blur-3xl pointer-events-none" />
 
-                {/* WASLA Emblem Logo (Royal Blue & Electric Blue with dynamic reflections) */}
+                {/* Finalized Official WASLA Emblem Logo */}
                 <WaslaLogo size="xl" showText={false} animated={true} variant="dark" />
 
                 {/* Brand Name Typography */}
@@ -384,7 +412,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
                   className="mt-3 space-y-1"
                 >
                   <p className="text-sm sm:text-base font-bold text-[#FFFFFF] drop-shadow-sm font-['Cairo',sans-serif]">
@@ -395,13 +423,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                   </p>
                 </motion.div>
 
-                {/* Progress Indicator */}
+                {/* Progress Indicator for final reveal */}
                 <div className="mt-6 w-36 h-1 bg-[#15356B] rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-[#245BDB] via-[#1769FF] to-[#EAF2FF]"
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
-                    transition={{ duration: 1.2, ease: 'linear' }}
+                    transition={{ duration: 2.5, ease: 'linear' }}
                   />
                 </div>
               </div>
@@ -409,6 +437,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
+
+export default SplashScreen;
