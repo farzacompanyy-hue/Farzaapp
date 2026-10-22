@@ -1,6 +1,6 @@
 import React from 'react';
 import { FarzaLogo } from './FarzaLogo';
-import { Play, PhoneCall, Smartphone, Shield, Settings } from 'lucide-react';
+import { Play, PhoneCall, Smartphone, Settings } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface HeaderProps {
@@ -101,30 +101,6 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden sm:inline">المقدمة</span>
         </button>
 
-        {/* Privacy Center Button */}
-        {onOpenPrivacy && (
-          <button
-            onClick={onOpenPrivacy}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#202633] hover:text-[#245BDB] text-xs font-medium border border-[#DCE4F0] hover:border-[#245BDB]/40 transition-all cursor-pointer whitespace-nowrap"
-            title="مركز الخصوصية وحماية البيانات"
-          >
-            <Shield className="w-3.5 h-3.5 text-[#245BDB]" />
-            <span className="hidden lg:inline">الخصوصية</span>
-          </button>
-        )}
-
-        {/* User / Driver Settings Shortcut */}
-        {currentRole && onOpenSettings && (
-          <button
-            onClick={onOpenSettings}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#EAF2FF] text-[#245BDB] text-xs font-bold border border-[#245BDB]/25 transition-all cursor-pointer whitespace-nowrap shadow-xs"
-            title="الإعدادات (مثل واتساب)"
-          >
-            <Settings className="w-3.5 h-3.5 text-[#245BDB]" />
-            <span className="hidden sm:inline">الإعدادات</span>
-          </button>
-        )}
-
         {/* Customer Support shortcut */}
         <button
           onClick={onOpenSupport}
@@ -135,6 +111,17 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden md:inline">{customerPhone}</span>
           <span className="md:hidden">دعم</span>
         </button>
+
+        {/* Single Sleek Settings Icon Button at the corner */}
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            className="w-9 h-9 rounded-full bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#245BDB] hover:text-[#1769FF] flex items-center justify-center border border-[#245BDB]/25 transition-all cursor-pointer shadow-xs shrink-0"
+            title="إعدادات الحساب"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Active Role Switcher Pill */}
         {currentRole && (

@@ -19,6 +19,8 @@ import {
   LogOut,
   Trash2,
   AlertTriangle,
+  Camera,
+  Upload,
   CheckCircle2,
   MapPin,
   Clock,
@@ -67,7 +69,24 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
   const [name, setName] = useState('محمد صالح القدسي');
   const [phone, setPhone] = useState('773456789');
   const [email, setEmail] = useState('m.alqudsi@farza.app');
+  const [avatar, setAvatar] = useState<string>(
+    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'
+  );
   const [profileSaved, setProfileSaved] = useState(false);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setAvatar(reader.result);
+          setProfileSaved(true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Change phone state
   const [isChangingPhone, setIsChangingPhone] = useState(false);
@@ -228,8 +247,12 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
                 className="p-4 rounded-3xl bg-[#F5F7FB] hover:bg-[#EAF2FF]/60 border border-[#245BDB]/20 flex items-center justify-between gap-4 cursor-pointer transition-all shadow-xs group"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="relative w-14 h-14 rounded-2xl bg-[#245BDB] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[#245BDB]/25 overflow-hidden">
-                    <span>{name.charAt(0)}</span>
+                  <div className="relative w-14 h-14 rounded-2xl bg-[#245BDB] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[#245BDB]/25 overflow-hidden border-2 border-[#245BDB]/20">
+                    {avatar ? (
+                      <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{name.charAt(0)}</span>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                   </div>
 
@@ -437,8 +460,44 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
           {activeSection === 'profile' && (
             <div className="space-y-6">
               <form onSubmit={handleProfileSubmit} className="space-y-4">
-                <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-4">
-                  <h4 className="text-xs font-bold text-[#202633]">البيانات الشخصية الأساسية</h4>
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-4">
+                  {/* Avatar Upload Area */}
+                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-white border border-[#245BDB]/20 shadow-xs">
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-[#245BDB]/30 bg-[#245BDB] text-white shrink-0 group">
+                      <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                      <label
+                        htmlFor="passenger-avatar-input"
+                        className="absolute inset-0 bg-black/40 hover:bg-black/60 flex items-center justify-center cursor-pointer transition-colors text-white"
+                        title="تحميل صورة جديدة"
+                      >
+                        <Camera className="w-5 h-5" />
+                      </label>
+                      <input
+                        id="passenger-avatar-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[#202633]">الصورة الشخصية</span>
+                        <label
+                          htmlFor="passenger-avatar-input"
+                          className="text-[11px] font-bold text-[#245BDB] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <Upload className="w-3 h-3" />
+                          <span>تحميل صورة</span>
+                        </label>
+                      </div>
+                      <p className="text-[11px] text-[#7B8494] leading-relaxed">
+                        اختر صورة واضحة لتظهر للسائق عند تأكيد حجز مقعدك.
+                      </p>
+                    </div>
+                  </div>
+
+                  <h4 className="text-xs font-bold text-[#202633] pt-1">البيانات الشخصية الأساسية</h4>
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#7B8494]">الاسم الكامل</label>

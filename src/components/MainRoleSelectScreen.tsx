@@ -288,15 +288,6 @@ export const MainRoleSelectScreen: React.FC<MainRoleSelectScreenProps> = ({
             <span>مشاهدة المقدمة التفاعلية</span>
           </button>
 
-          {/* Privacy Center Shortcut */}
-          <button
-            onClick={() => onOpenPrivacy && onOpenPrivacy('privacy')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#202633] hover:text-[#245BDB] border border-[#245BDB]/20 transition-all cursor-pointer"
-          >
-            <Shield className="w-4 h-4 text-[#245BDB]" />
-            <span>مركز الخصوصية وحماية البيانات</span>
-          </button>
-
           {/* Customer Service Direct (739992781) */}
           <button
             onClick={onOpenSupport}
