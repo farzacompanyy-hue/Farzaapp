@@ -15,6 +15,7 @@ import {
   Lock,
   Smartphone,
   Info,
+  ArrowRight,
 } from 'lucide-react';
 import {
   PRIVACY_POLICY_SECTIONS,
@@ -104,6 +105,16 @@ export const PrivacyCenterModal: React.FC<PrivacyCenterModalProps> = ({
         {/* Header Bar */}
         <div className="p-4 sm:p-6 bg-[#FFFFFF] border-b border-[#245BDB]/15 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">
+            {/* Back Button */}
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#245BDB] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+              title="رجوع"
+            >
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span>رجوع</span>
+            </button>
+
             <div className="w-11 h-11 rounded-2xl bg-[#EAF2FF] border border-[#245BDB]/30 text-[#245BDB] flex items-center justify-center shrink-0">
               <Shield className="w-6 h-6" />
             </div>

@@ -10,7 +10,6 @@ import {
   MapPin,
   PhoneCall,
   Play,
-  Settings,
   Sparkles,
   ArrowLeft,
   Users,
@@ -293,15 +292,6 @@ export const MainRoleSelectScreen: React.FC<MainRoleSelectScreenProps> = ({
           >
             <PhoneCall className="w-4 h-4 text-[#245BDB]" />
             <span>الدعم: <strong className="text-[#245BDB] font-mono tracking-wider">{customerPhone}</strong></span>
-          </button>
-
-          {/* Admin Dashboard Entry */}
-          <button
-            onClick={() => onSelectRole('admin')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#7B8494] hover:text-[#245BDB] border border-[#E2E8F0] hover:border-[#245BDB]/40 transition-all cursor-pointer mr-auto"
-          >
-            <Settings className="w-4 h-4" />
-            <span>لوحة الإدارة</span>
           </button>
         </div>
       </div>

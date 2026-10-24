@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { PhoneCall, MessageCircle, Send, X, CheckCircle2, Shield, HelpCircle } from 'lucide-react';
+import { PhoneCall, MessageCircle, Send, X, CheckCircle2, Shield, HelpCircle, ArrowRight } from 'lucide-react';
 
 interface CustomerSupportModalProps {
   phone?: string;
@@ -37,6 +37,14 @@ export const CustomerSupportModal: React.FC<CustomerSupportModalProps> = ({
       >
         <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
           <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+              title="رجوع"
+            >
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span>رجوع</span>
+            </button>
             <HelpCircle className="w-5 h-5 text-[#0056B3]" />
             <h3 className="text-lg font-black text-[#1A2536]">خدمة عملاء وَصْلَة</h3>
           </div>

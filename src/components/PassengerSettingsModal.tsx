@@ -188,12 +188,22 @@ export const PassengerSettingsModal: React.FC<PassengerSettingsModalProps> = ({
             {activeSection !== null ? (
               <button
                 onClick={() => setActiveSection(null)}
-                className="w-9 h-9 rounded-full bg-white hover:bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center border border-[#DCE4F0] cursor-pointer transition-colors shadow-xs"
-                title="الرجوع للقائمة الرئيسية"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#EAF2FF] text-[#245BDB] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+                title="الرجوع لقائمة الإعدادات"
               >
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                <span>رجوع</span>
               </button>
-            ) : null}
+            ) : (
+              <button
+                onClick={onClose}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#EAF2FF] text-[#245BDB] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+                title="الرجوع إلى التطبيق"
+              >
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                <span>الرئيسية</span>
+              </button>
+            )}
 
             <div>
               <h3 className="text-lg font-black text-[#202633] flex items-center gap-2">

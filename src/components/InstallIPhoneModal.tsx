@@ -11,6 +11,7 @@ import {
   Laptop,
   Download,
   Info,
+  ArrowRight,
 } from 'lucide-react';
 
 interface InstallIPhoneModalProps {
@@ -69,6 +70,14 @@ export const InstallIPhoneModal: React.FC<InstallIPhoneModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
           <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#245BDB] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+              title="رجوع"
+            >
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span>رجوع</span>
+            </button>
             <div className="w-11 h-11 rounded-2xl bg-[#EAF2FF] border border-[#245BDB]/30 flex items-center justify-center text-[#245BDB]">
               <Smartphone className="w-6 h-6" />
             </div>

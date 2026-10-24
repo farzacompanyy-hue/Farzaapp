@@ -13,6 +13,8 @@ import { PrivacyCenterModal } from './components/PrivacyCenterModal';
 import { PublicLegalPage } from './components/PublicLegalPage';
 import { PassengerSettingsModal } from './components/PassengerSettingsModal';
 import { DriverSettingsModal } from './components/DriverSettingsModal';
+import { BottomNavBar, BottomNavTab } from './components/BottomNavBar';
+import { NotificationsModal } from './components/NotificationsModal';
 import {
   INITIAL_DRIVERS,
   INITIAL_TRIPS,
@@ -40,20 +42,90 @@ export default function App() {
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
 
-  // Active Modals: Chat, Support, Install, Privacy Center & Settings
+  // Active Modals: Chat, Support, Install, Privacy Center, Settings & Notifications
   const [activeChatBookingId, setActiveChatBookingId] = useState<string | null>(null);
   const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
   const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
   const [showPassengerSettings, setShowPassengerSettings] = useState<boolean>(false);
   const [showDriverSettings, setShowDriverSettings] = useState<boolean>(false);
+  const [showNotifications, setShowNotifications] = useState<boolean>(false);
+  const [passengerTab, setPassengerTab] = useState<'search' | 'my_bookings'>('search');
   const [privacyTab, setPrivacyTab] = useState<'privacy' | 'terms' | 'consents' | 'delete' | 'contact'>('privacy');
+
+  // Universal Navigation & Mobile / Android Hardware Back Button Handling
+  React.useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      // 1. If any modal is open, close it first without navigating away
+      if (showNotifications) {
+        setShowNotifications(false);
+        return;
+      }
+      if (showPassengerSettings) {
+        setShowPassengerSettings(false);
+        return;
+      }
+      if (showDriverSettings) {
+        setShowDriverSettings(false);
+        return;
+      }
+      if (showPrivacyModal) {
+        setShowPrivacyModal(false);
+        return;
+      }
+      if (showSupportModal) {
+        setShowSupportModal(false);
+        return;
+      }
+      if (showInstallModal) {
+        setShowInstallModal(false);
+        return;
+      }
+      if (activeChatBookingId) {
+        setActiveChatBookingId(null);
+        return;
+      }
+
+      // 2. If inside an inner role view (Passenger / Driver / Admin), return to Home
+      if (currentRole !== null) {
+        setCurrentRole(null);
+        return;
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [
+    showNotifications,
+    showPassengerSettings,
+    showDriverSettings,
+    showPrivacyModal,
+    showSupportModal,
+    showInstallModal,
+    activeChatBookingId,
+    currentRole,
+  ]);
+
+  // Safe navigation helpers that push history states
+  const navigateToRole = (role: UserRole | null) => {
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState({ role }, '', role ? `?role=${role}` : window.location.pathname);
+    }
+    setCurrentRole(role);
+  };
+
+  const openModalSafely = (setter: React.Dispatch<React.SetStateAction<boolean>>, name: string) => {
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState({ modal: name }, '', window.location.href);
+    }
+    setter(true);
+  };
 
   const handleOpenPrivacy = (
     tab: 'privacy' | 'terms' | 'consents' | 'delete' | 'contact' = 'privacy'
   ) => {
     setPrivacyTab(tab);
-    setShowPrivacyModal(true);
+    openModalSafely(setShowPrivacyModal, 'privacy');
   };
 
   const handleAccountDeleted = (phone: string) => {
@@ -325,6 +397,56 @@ export default function App() {
     ? trips.find((t) => t.id === activeChatBooking.tripId)
     : undefined;
 
+  // Active Bottom Nav Tab calculation
+  const getBottomNavTab = (): BottomNavTab => {
+    if (showNotifications) return 'notifications';
+    if (showPassengerSettings || showDriverSettings) return 'profile';
+    if (currentRole === 'driver') return 'trips';
+    if (currentRole === 'passenger' && passengerTab === 'my_bookings') return 'trips';
+    return 'home';
+  };
+
+  const activeTripsCount = currentRole === 'driver'
+    ? trips.filter((t) => t.status === 'published').length
+    : bookings.filter((b) => b.status === 'confirmed' || b.status === 'pending_driver').length;
+
+  const handleBottomNavSelect = (tab: BottomNavTab) => {
+    if (tab === 'home') {
+      setShowNotifications(false);
+      setShowPassengerSettings(false);
+      setShowDriverSettings(false);
+      setShowPrivacyModal(false);
+      setShowSupportModal(false);
+      setShowInstallModal(false);
+      setActiveChatBookingId(null);
+      navigateToRole(null);
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (tab === 'trips') {
+      setShowNotifications(false);
+      setShowPassengerSettings(false);
+      setShowDriverSettings(false);
+      if (currentRole === 'driver') {
+        // stay in driver view
+      } else {
+        navigateToRole('passenger');
+        setPassengerTab('my_bookings');
+      }
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (tab === 'notifications') {
+      openModalSafely(setShowNotifications, 'notifications');
+    } else if (tab === 'profile') {
+      if (currentRole === 'driver') {
+        openModalSafely(setShowDriverSettings, 'driver_settings');
+      } else {
+        openModalSafely(setShowPassengerSettings, 'passenger_settings');
+      }
+    }
+  };
+
   // If standalone legal URL parameter is active (?page=privacy | terms | delete-account)
   if (activeLegalPage) {
     return (
@@ -361,27 +483,27 @@ export default function App() {
           {/* Top Bar Navigation */}
           <Header
             currentRole={currentRole}
-            onSelectRole={(role) => setCurrentRole(role)}
+            onSelectRole={(role) => navigateToRole(role)}
             onReplayIntro={() => setShowSplash(true)}
-            onOpenSupport={() => setShowSupportModal(true)}
-            onOpenInstall={() => setShowInstallModal(true)}
+            onOpenSupport={() => openModalSafely(setShowSupportModal, 'support')}
+            onOpenInstall={() => openModalSafely(setShowInstallModal, 'install')}
             onOpenPrivacy={() => handleOpenPrivacy('privacy')}
             onOpenSettings={() => {
-              if (currentRole === 'driver') setShowDriverSettings(true);
-              else setShowPassengerSettings(true);
+              if (currentRole === 'driver') openModalSafely(setShowDriverSettings, 'driver_settings');
+              else openModalSafely(setShowPassengerSettings, 'passenger_settings');
             }}
             customerPhone={settings.customerServicePhone}
           />
 
           {/* MAIN WORKSPACE CONTENT */}
-          <main className="flex-1">
+          <main className="flex-1 pb-24 sm:pb-28">
             {currentRole === null ? (
               /* THE MAIN DASHBOARD SCREEN (Immediately follows the introduction) */
               <MainRoleSelectScreen
-                onSelectRole={(role) => setCurrentRole(role)}
+                onSelectRole={(role) => navigateToRole(role)}
                 onReplayIntro={() => setShowSplash(true)}
-                onOpenSupport={() => setShowSupportModal(true)}
-                onOpenInstall={() => setShowInstallModal(true)}
+                onOpenSupport={() => openModalSafely(setShowSupportModal, 'support')}
+                onOpenInstall={() => openModalSafely(setShowInstallModal, 'install')}
                 onOpenPrivacy={handleOpenPrivacy}
                 customerPhone={settings.customerServicePhone}
                 slogan={settings.appSlogan}
@@ -393,9 +515,16 @@ export default function App() {
                 bookings={bookings}
                 cities={YEMEN_CITIES}
                 onBookTrip={handleBookTrip}
-                onOpenChat={(bookingId) => setActiveChatBookingId(bookingId)}
+                onOpenChat={(bookingId) => {
+                  setActiveChatBookingId(bookingId);
+                  if (typeof window !== 'undefined' && window.history) {
+                    window.history.pushState({ modal: 'chat' }, '', window.location.href);
+                  }
+                }}
                 onRateDriver={handleRateDriver}
-                onOpenSettings={() => setShowPassengerSettings(true)}
+                onOpenSettings={() => openModalSafely(setShowPassengerSettings, 'passenger_settings')}
+                initialTab={passengerTab}
+                onBackToHome={() => navigateToRole(null)}
               />
             ) : currentRole === 'driver' ? (
               /* DRIVER INTERCITY FLEET & COMMISSION VIEW */
@@ -409,8 +538,14 @@ export default function App() {
                 onAcceptBooking={handleAcceptBooking}
                 onRejectBooking={handleRejectBooking}
                 onSubmitCommissionReceipt={handleSubmitCommissionReceipt}
-                onOpenChat={(bookingId) => setActiveChatBookingId(bookingId)}
-                onOpenSettings={() => setShowDriverSettings(true)}
+                onOpenChat={(bookingId) => {
+                  setActiveChatBookingId(bookingId);
+                  if (typeof window !== 'undefined' && window.history) {
+                    window.history.pushState({ modal: 'chat' }, '', window.location.href);
+                  }
+                }}
+                onOpenSettings={() => openModalSafely(setShowDriverSettings, 'driver_settings')}
+                onBackToHome={() => navigateToRole(null)}
               />
             ) : (
               /* ADMIN DASHBOARD & VERIFICATION VIEW */
@@ -425,6 +560,7 @@ export default function App() {
                 onApproveCommission={handleApproveCommission}
                 onRejectCommission={handleRejectCommission}
                 onUpdateSettings={handleUpdateSettings}
+                onBackToHome={() => navigateToRole(null)}
               />
             )}
           </main>
@@ -532,6 +668,26 @@ export default function App() {
             />
           )}
 
+          {/* NOTIFICATIONS MODAL */}
+          {showNotifications && (
+            <NotificationsModal
+              bookings={bookings}
+              onClose={() => setShowNotifications(false)}
+              onOpenChat={(bookingId) => {
+                setShowNotifications(false);
+                setActiveChatBookingId(bookingId);
+                if (typeof window !== 'undefined' && window.history) {
+                  window.history.pushState({ modal: 'chat' }, '', window.location.href);
+                }
+              }}
+              onNavigateToTrips={() => {
+                setShowNotifications(false);
+                navigateToRole('passenger');
+                setPassengerTab('my_bookings');
+              }}
+            />
+          )}
+
           {/* FOOTER WITH COMPREHENSIVE PRIVACY & LEGAL LINKS */}
           <footer className="w-full py-6 px-4 border-t border-[#0056B3]/15 text-center text-xs text-[#7B8494] bg-[#F8FAFC]">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -573,7 +729,7 @@ export default function App() {
                 </button>
                 <span>·</span>
                 <button
-                  onClick={() => setShowSupportModal(true)}
+                  onClick={() => openModalSafely(setShowSupportModal, 'support')}
                   className="hover:text-[#245BDB] font-bold transition-colors cursor-pointer"
                 >
                   خدمة العملاء ({settings.customerServicePhone})
@@ -581,6 +737,15 @@ export default function App() {
               </div>
             </div>
           </footer>
+
+          {/* PERSISTENT BOTTOM NAVIGATION BAR (APP DOCK) */}
+          <BottomNavBar
+            activeTab={getBottomNavTab()}
+            currentRole={currentRole}
+            unreadNotificationsCount={2}
+            activeTripsCount={activeTripsCount}
+            onSelectTab={handleBottomNavSelect}
+          />
         </>
       )}
     </div>

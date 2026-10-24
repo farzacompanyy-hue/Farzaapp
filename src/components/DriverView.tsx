@@ -18,6 +18,7 @@ import {
   Receipt,
   FileCheck,
   Settings,
+  ArrowRight,
 } from 'lucide-react';
 
 interface DriverViewProps {
@@ -32,6 +33,7 @@ interface DriverViewProps {
   onSubmitCommissionReceipt: (bookingId: string, bank: string, refNumber: string, receiptPhoto: string) => void;
   onOpenChat: (bookingId: string) => void;
   onOpenSettings?: () => void;
+  onBackToHome?: () => void;
 }
 
 export const DriverView: React.FC<DriverViewProps> = ({
@@ -46,6 +48,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
   onSubmitCommissionReceipt,
   onOpenChat,
   onOpenSettings,
+  onBackToHome,
 }) => {
   const [activeTab, setActiveTab] = useState<'trips' | 'bookings' | 'commissions'>('bookings');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -136,6 +139,17 @@ export const DriverView: React.FC<DriverViewProps> = ({
       {/* DRIVER PROFILE HEADER CARD (Soft Gray & Royal Blue Accents) */}
       <div className="p-6 sm:p-8 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#0056B3]/25 transition-all cursor-pointer shadow-2xs group shrink-0"
+              title="الرجوع إلى الرئيسية"
+            >
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span>الرئيسية</span>
+            </button>
+          )}
+
           <div className="relative">
             <img
               src={driver.photo}
@@ -481,9 +495,19 @@ export const DriverView: React.FC<DriverViewProps> = ({
               className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-6 shadow-2xl text-[#202633]"
             >
               <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
-                <div className="flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-[#245BDB]" />
-                  <h3 className="text-lg font-black text-[#202633]">دفع عمولة منصة وَصْلَة (20%)</h3>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={() => setPayingBooking(null)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+                    title="رجوع"
+                  >
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span>رجوع</span>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <Receipt className="w-5 h-5 text-[#245BDB]" />
+                    <h3 className="text-lg font-black text-[#202633]">دفع عمولة منصة وَصْلَة (20%)</h3>
+                  </div>
                 </div>
                 <button
                   onClick={() => setPayingBooking(null)}
@@ -628,9 +652,19 @@ export const DriverView: React.FC<DriverViewProps> = ({
               className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-5 shadow-2xl my-8 text-[#202633]"
             >
               <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
-                <div className="flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-[#245BDB]" />
-                  <h3 className="text-lg font-black text-[#202633]">نشر رحلة جديدة للسائق</h3>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+                    title="رجوع"
+                  >
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span>رجوع</span>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-[#245BDB]" />
+                    <h3 className="text-lg font-black text-[#202633]">نشر رحلة جديدة للسائق</h3>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowCreateModal(false)}

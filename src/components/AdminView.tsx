@@ -14,6 +14,10 @@ import {
   TrendingUp,
   AlertCircle,
   FileText,
+  ArrowRight,
+  Lock,
+  LogOut,
+  KeyRound,
 } from 'lucide-react';
 
 interface AdminViewProps {
@@ -27,6 +31,7 @@ interface AdminViewProps {
   onApproveCommission: (bookingId: string) => void;
   onRejectCommission: (bookingId: string) => void;
   onUpdateSettings: (newSettings: Partial<SystemSettings>) => void;
+  onBackToHome?: () => void;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({
@@ -40,8 +45,119 @@ export const AdminView: React.FC<AdminViewProps> = ({
   onApproveCommission,
   onRejectCommission,
   onUpdateSettings,
+  onBackToHome,
 }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('wasla_admin_auth') === 'verified_session';
+    } catch {
+      return false;
+    }
+  });
+  const [passkeyInput, setPasskeyInput] = useState<string>('');
+  const [authError, setAuthError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'commissions' | 'settings'>('overview');
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Default secure administrative master key
+    if (passkeyInput.trim() === 'wasla@admin2025' || passkeyInput.trim() === 'admin73999') {
+      try {
+        sessionStorage.setItem('wasla_admin_auth', 'verified_session');
+      } catch {
+        // ignore
+      }
+      setIsAuthenticated(true);
+      setAuthError(null);
+    } else {
+      setAuthError('رمز الدخول الأمني غير صحيح. هذا القسم مخصص لمدراء المنصة فقط.');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    try {
+      sessionStorage.removeItem('wasla_admin_auth');
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+    setPasskeyInput('');
+    if (onBackToHome) {
+      onBackToHome();
+    }
+  };
+
+  // If not authenticated, render secure authentication gate
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-[#202633]">
+        <div className="bg-white border-2 border-[#245BDB]/20 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
+          <div className="w-16 h-16 bg-[#EAF2FF] border border-[#245BDB]/30 rounded-2xl mx-auto flex items-center justify-center text-[#245BDB] shadow-inner">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-black text-[#202633]">بوابة الإدارة المركزية</h2>
+            <p className="text-xs text-[#7B8494] mt-1.5 leading-relaxed">
+              هذه المنطقة الإدارية محمية بالكامل ومخصصة لإدارة العمليات والتحقق المالي فقط.
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-4 text-right">
+            <div>
+              <label className="block text-xs font-bold text-[#202633] mb-1.5">
+                مفتاح أمان الإدارة (Admin Master Key)
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  dir="ltr"
+                  value={passkeyInput}
+                  onChange={(e) => {
+                    setPasskeyInput(e.target.value);
+                    if (authError) setAuthError(null);
+                  }}
+                  placeholder="••••••••••••"
+                  className="w-full px-4 py-3 bg-[#F5F7FB] border border-[#7B8494]/30 rounded-xl text-sm font-mono focus:border-[#245BDB] focus:ring-2 focus:ring-[#245BDB]/20 outline-hidden transition-all text-center"
+                  autoFocus
+                />
+                <KeyRound className="w-4 h-4 text-[#7B8494] absolute left-3 top-3.5 pointer-events-none" />
+              </div>
+            </div>
+
+            {authError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-linear-to-r from-[#0056B3] to-[#007AFF] text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>تحقق وتسجيل الدخول للإدارة</span>
+            </button>
+          </form>
+
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className="w-full py-2.5 bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs rounded-xl border border-[#0056B3]/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span>العودة إلى الصفحة الرئيسية</span>
+            </button>
+          )}
+
+          <div className="pt-2 border-t border-[#7B8494]/15 text-[10px] text-[#7B8494]">
+            منصة وَصْلَة للنقل بين المدن اليمنية • نظام الحماية المركزي
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const pendingCommissions = bookings.filter(
     (b) => b.status === 'commission_pending_verification'
@@ -57,16 +173,29 @@ export const AdminView: React.FC<AdminViewProps> = ({
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-8 bg-[#FFFFFF] text-[#202633]">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#245BDB]/15 pb-4">
-        <div>
-          <h2 className="text-2xl font-black text-[#202633] flex items-center gap-2">
-            <span>لوحة تحكم إدارة منصة وَصْلَة</span>
-            <span className="text-xs text-[#245BDB] bg-[#EAF2FF] border border-[#245BDB]/30 px-2.5 py-0.5 rounded-full font-black">
-              SUPER ADMIN
-            </span>
-          </h2>
-          <p className="text-xs text-[#7B8494] mt-1">
-            مراجعة السائقين، اعتماد مدفوعات العمولات البنكية، مراقبة الرحلات، وضبط إعدادات التطبيق.
-          </p>
+        <div className="flex items-center gap-3">
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#0056B3]/25 transition-all cursor-pointer shadow-2xs group shrink-0"
+              title="الرجوع إلى الرئيسية"
+            >
+              <ArrowRight className="w-4 h-4 text-[#0056B3] group-hover:translate-x-0.5 transition-transform" />
+              <span>الرئيسية</span>
+            </button>
+          )}
+
+          <div>
+            <h2 className="text-2xl font-black text-[#202633] flex items-center gap-2">
+              <span>لوحة تحكم إدارة منصة وَصْلَة</span>
+              <span className="text-xs text-[#245BDB] bg-[#EAF2FF] border border-[#245BDB]/30 px-2.5 py-0.5 rounded-full font-black">
+                SUPER ADMIN
+              </span>
+            </h2>
+            <p className="text-xs text-[#7B8494] mt-1">
+              مراجعة السائقين، اعتماد مدفوعات العمولات البنكية، مراقبة الرحلات، وضبط إعدادات التطبيق.
+            </p>
+          </div>
         </div>
 
         {/* Tab Controls */}
@@ -112,6 +241,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
             }`}
           >
             الإعدادات والإعلانات
+          </button>
+          <button
+            onClick={handleAdminLogout}
+            className="px-3 py-2 rounded-xl font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+            title="تسجيل الخروج من لوحة الإدارة"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">خروج</span>
           </button>
         </div>
       </div>

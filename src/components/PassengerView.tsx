@@ -33,6 +33,8 @@ interface PassengerViewProps {
   onOpenChat: (bookingId: string) => void;
   onRateDriver: (bookingId: string, rating: number) => void;
   onOpenSettings?: () => void;
+  initialTab?: 'search' | 'my_bookings';
+  onBackToHome?: () => void;
 }
 
 export const PassengerView: React.FC<PassengerViewProps> = ({
@@ -43,8 +45,16 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
   onOpenChat,
   onRateDriver,
   onOpenSettings,
+  initialTab,
+  onBackToHome,
 }) => {
-  const [activeTab, setActiveTab] = useState<'search' | 'my_bookings'>('search');
+  const [activeTab, setActiveTab] = useState<'search' | 'my_bookings'>(initialTab || 'search');
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [fromCity, setFromCity] = useState<string>('صنعاء');
   const [toCity, setToCity] = useState<string>('عدن');
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-18');
@@ -686,9 +696,19 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
               className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-6 shadow-2xl text-[#202633]"
             >
               <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#245BDB]" />
-                  <h3 className="text-lg font-black text-[#202633]">تأكيد طلب حجز المقعد</h3>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={() => setBookingTrip(null)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+                    title="رجوع"
+                  >
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span>رجوع</span>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-[#245BDB]" />
+                    <h3 className="text-lg font-black text-[#202633]">تأكيد طلب حجز المقعد</h3>
+                  </div>
                 </div>
                 <button
                   onClick={() => setBookingTrip(null)}

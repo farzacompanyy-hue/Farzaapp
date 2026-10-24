@@ -1,6 +1,6 @@
 import React from 'react';
 import { WaslaLogo } from './WaslaLogo';
-import { Play, PhoneCall, Smartphone, Settings } from 'lucide-react';
+import { Play, PhoneCall, Smartphone, Settings, ArrowRight } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface HeaderProps {
@@ -26,19 +26,33 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full h-16 bg-[#FFFFFF]/95 backdrop-blur-xl border-b border-[#0056B3]/15 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 shadow-xs">
-      {/* Zone 1: Brand Wordmark + Wasla SVG Logo */}
-      <div
-        onClick={() => onSelectRole(null)}
-        className="flex items-center gap-2.5 cursor-pointer shrink-0 group"
-      >
-        <WaslaLogo size="sm" showText={false} />
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-black text-[#1A2536] font-['Plus_Jakarta_Sans',sans-serif] tracking-tight group-hover:text-[#0056B3] transition-colors">
-            WASLA
-          </span>
-          <span className="text-xl font-black text-[#0056B3] font-['Cairo',sans-serif]">
-            وَصْلَة
-          </span>
+      {/* Zone 1: Sticky Back Button + Brand Wordmark */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        {currentRole !== null && (
+          <button
+            onClick={() => onSelectRole(null)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F7FB] hover:bg-[#EAF2FF] text-[#0056B3] font-bold text-xs border border-[#0056B3]/25 transition-all cursor-pointer shadow-2xs group active:scale-95"
+            title="الرجوع إلى الشاشة الرئيسية"
+          >
+            <ArrowRight className="w-4 h-4 text-[#0056B3] group-hover:translate-x-0.5 transition-transform" />
+            <span className="hidden xs:inline">الرئيسية</span>
+          </button>
+        )}
+
+        <div
+          onClick={() => onSelectRole(null)}
+          className="flex items-center gap-2.5 cursor-pointer group"
+          title="الانتقال إلى الرئيسية"
+        >
+          <WaslaLogo size="sm" showText={false} />
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black text-[#1A2536] font-['Plus_Jakarta_Sans',sans-serif] tracking-tight group-hover:text-[#0056B3] transition-colors">
+              WASLA
+            </span>
+            <span className="text-xl font-black text-[#0056B3] font-['Cairo',sans-serif]">
+              وَصْلَة
+            </span>
+          </div>
         </div>
       </div>
 
@@ -67,14 +81,6 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           إدارة الرحلات (السائق)
-        </button>
-        <button
-          onClick={() => onSelectRole('admin')}
-          className={`hover:text-[#202633] transition-colors whitespace-nowrap cursor-pointer ${
-            currentRole === 'admin' ? 'text-[#245BDB] font-bold' : ''
-          }`}
-        >
-          لوحة الإدارة
         </button>
       </nav>
 
@@ -145,16 +151,6 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               سائق
-            </button>
-            <button
-              onClick={() => onSelectRole('admin')}
-              className={`px-2 py-1 rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                currentRole === 'admin'
-                  ? 'bg-[#245BDB] text-white font-bold shadow-xs'
-                  : 'text-[#7B8494] hover:text-[#202633]'
-              }`}
-            >
-              إدارة
             </button>
           </div>
         )}

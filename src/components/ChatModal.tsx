@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ChatMessage, Booking, Trip } from '../types';
-import { Send, X, ShieldCheck, CheckCheck } from 'lucide-react';
+import { Send, X, ShieldCheck, CheckCheck, ArrowRight } from 'lucide-react';
 
 interface ChatModalProps {
   booking: Booking;
@@ -42,6 +42,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         {/* Header */}
         <div className="p-4 bg-[#F5F7FB] border-b border-[#245BDB]/15 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFFFFF] hover:bg-[#EAF2FF] text-[#245BDB] font-bold text-xs border border-[#DCE4F0] cursor-pointer transition-colors shadow-2xs group"
+              title="رجوع"
+            >
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span>رجوع</span>
+            </button>
             <div className="w-10 h-10 rounded-full bg-[#EAF2FF] border border-[#245BDB]/30 flex items-center justify-center text-[#245BDB] font-black text-xs">
               {currentUserRole === 'passenger' ? 'سائق' : 'راكب'}
             </div>
