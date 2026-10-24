@@ -60,6 +60,7 @@ export interface Trip {
   fromArea: string;
   toCity: string;
   toArea: string;
+  intermediateStops?: string[]; // Intermediate cities or stops along route
   date: string;
   departureTime: string;
   totalSeats: number;
@@ -83,6 +84,8 @@ export interface Booking {
   passengerPhoto?: string;
   seatsCount: number;
   seatNumbers?: number[];
+  pickupPoint?: string; // e.g. 'فرزة باب اليمن - جولة خولان'
+  dropoffPoint?: string; // e.g. 'الشيخ عثمان - جولة كراع'
   pricePerSeat: number;
   totalAmount: number; // in YER
   commissionAmount: number; // 20%

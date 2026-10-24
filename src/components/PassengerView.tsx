@@ -23,13 +23,73 @@ import {
   Sparkles,
   Filter,
   Compass,
+  Share2,
+  Navigation,
+  Check,
 } from 'lucide-react';
+
+export const POPULAR_ASSEMBLY_POINTS: Record<string, string[]> = {
+  'صنعاء': [
+    'فرزة باب اليمن - جولة خولان',
+    'فرزة عصر - شارع الستين',
+    'جولة الرويشان - حدة',
+    'فرزة الحثيلي - دار سلم',
+    'فرزة عمران - الجراف',
+    'مذبح - جولة شيراتون',
+  ],
+  'عدن': [
+    'فرزة الشيخ عثمان - جولة السفينة',
+    'المنصورة - جولة كالتكس',
+    'خور مكسر - جولة المطار',
+    'المعلا - الشارع الرئيسي',
+    'إنماء - بوابة الجامعة',
+  ],
+  'تعز': [
+    'فرزة الحوبان - جولة الذكرى',
+    'شارع جمال - أمام فندق السعيد',
+    'بير باشا - فرزة النشمة',
+    'المسبح - ديلوكس',
+    'الضباب - المفرق',
+  ],
+  'إب': [
+    'فرزة المعاين - الدائري الغربي',
+    'فرزة يريم',
+    'فرزة القاعدة',
+    'مفرق جبلة',
+  ],
+  'ذمار': [
+    'جولة رداع - فرزة الجنوب',
+    'معبر - الخط العام',
+    'شارع صنعاء - الفرزة الرئيسية',
+  ],
+  'المكلا': [
+    'فرزة الديس',
+    'فرزة فوه',
+    'الرواد - الخط الساحلي',
+  ],
+  'مأرب': [
+    'المجمع الرئيسي',
+    'فرزة شارع صنعاء',
+  ],
+  'الحديدة': [
+    'فرزة باجل',
+    'شارع صنعاء - كيلو 7',
+  ],
+};
 
 interface PassengerViewProps {
   trips: Trip[];
   bookings: Booking[];
   cities: City[];
-  onBookTrip: (tripId: string, seatsCount: number, name: string, phone: string) => void;
+  onBookTrip: (
+    tripId: string,
+    seatsCount: number,
+    name: string,
+    phone: string,
+    pickupPoint?: string,
+    dropoffPoint?: string,
+    seatNumbers?: number[]
+  ) => void;
   onOpenChat: (bookingId: string) => void;
   onRateDriver: (bookingId: string, rating: number) => void;
   onOpenSettings?: () => void;
@@ -57,6 +117,8 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
   }, [initialTab]);
   const [fromCity, setFromCity] = useState<string>('صنعاء');
   const [toCity, setToCity] = useState<string>('عدن');
+  const [pickupAssemblyPoint, setPickupAssemblyPoint] = useState<string>('');
+  const [dropoffAssemblyPoint, setDropoffAssemblyPoint] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-18');
   const [requiredSeats, setRequiredSeats] = useState<number>(1);
   const [activeFilterPill, setActiveFilterPill] = useState<'all' | 'today' | 'morning' | 'ac' | 'family' | 'instant'>('all');
@@ -65,20 +127,68 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
   const [bookingTrip, setBookingTrip] = useState<Trip | null>(null);
   const [passengerName, setPassengerName] = useState<string>('محمد صالح');
   const [passengerPhone, setPassengerPhone] = useState<string>('773456789');
-  const [bookingSeats, setBookingSeats] = useState<number>(1);
+  const [customPickupPoint, setCustomPickupPoint] = useState<string>('');
+  const [customDropoffPoint, setCustomDropoffPoint] = useState<string>('');
+  const [selectedSeatNumbers, setSelectedSeatNumbers] = useState<number[]>([1]);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleSwapCities = () => {
-    const temp = fromCity;
+    const tempCity = fromCity;
+    const tempAssembly = pickupAssemblyPoint;
     setFromCity(toCity);
-    setToCity(temp);
+    setToCity(tempCity);
+    setPickupAssemblyPoint(dropoffAssemblyPoint);
+    setDropoffAssemblyPoint(tempAssembly);
   };
 
-  // Filter trips based on search and interactive pills
+  // WhatsApp Trip & Safety Sharing
+  const handleShareTrip = (trip: Trip, booking?: Booking) => {
+    const pickup = booking?.pickupPoint || trip.fromArea || 'الفرزة الرئيسية';
+    const dropoff = booking?.dropoffPoint || trip.toArea || 'فرزة الوصول';
+    const seatsText = booking
+      ? `• رمز الحجز: #${booking.id}\n• المقاعد المحجوزة: ${booking.seatsCount} مقعد`
+      : `• المقاعد المتاحة: ${trip.availableSeats} من أصل ${trip.totalSeats} مقاعد`;
+    const intermediateText =
+      trip.intermediateStops && trip.intermediateStops.length > 0
+        ? `\n• المحطات والمدن الوسيطة: ${trip.intermediateStops.join(' ← ')}`
+        : '';
+
+    const shareText = `🚨 *تفاصيل رحلتي عبر تطبيق وَصْلَة (WASLA) - سلامة السفر* 🚗💨
+━━━━━━━━━━━━━━━━━━━━
+📍 *خط السير:* من ${trip.fromCity} (${pickup}) إلى ${trip.toCity} (${dropoff})
+⏰ *موعد الانطلاق:* ${trip.date} الساعة ${trip.departureTime}
+👤 *السائق:* ${trip.driverName} (سائق موثق رسمي ⭐️ ${trip.driverRating.toFixed(1)})
+📞 *رقم هاتف السائق:* ${trip.driverPhone}
+🚘 *السيارة:* ${trip.vehicleModel} (${trip.vehicleColor})
+🔢 *رقم لوحة السيارة:* ${trip.vehiclePlate}
+${seatsText}${intermediateText}
+━━━━━━━━━━━━━━━━━━━━
+🛡 *خدمة العملاء وطوارئ المنصة:* 739992781
+📱 حجز مقاعد مؤكد عبر منصة وَصْلَة للنقل بين المدن اليمنية.`;
+
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      (navigator as any).share({
+        title: `تفاصيل رحلة وَصْلَة: ${trip.fromCity} - ${trip.toCity}`,
+        text: shareText,
+      }).catch(() => {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+      });
+    } else {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+    }
+
+    setToastMessage('تم تجهيز تفاصيل الرحلة وفتح واتساب للمشاركة!');
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Filter trips based on search, assembly points and interactive pills
   const filteredTrips = trips.filter((trip) => {
     const matchFrom = !fromCity || trip.fromCity === fromCity;
     const matchTo = !toCity || trip.toCity === toCity;
     const matchSeats = trip.availableSeats >= requiredSeats;
+    const matchPickup = !pickupAssemblyPoint || trip.fromArea.toLowerCase().includes(pickupAssemblyPoint.toLowerCase());
+    const matchDropoff = !dropoffAssemblyPoint || trip.toArea.toLowerCase().includes(dropoffAssemblyPoint.toLowerCase());
 
     let matchPill = true;
     if (activeFilterPill === 'today') {
@@ -86,26 +196,49 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
     } else if (activeFilterPill === 'morning') {
       matchPill = trip.departureTime.includes('ص') || trip.departureTime.includes('صباحاً');
     } else if (activeFilterPill === 'ac') {
-      matchPill = true; // All Toyota Hilux fleet are AC-equipped
+      matchPill = true;
     } else if (activeFilterPill === 'family') {
       matchPill = trip.availableSeats >= 3;
     } else if (activeFilterPill === 'instant') {
       matchPill = trip.availableSeats >= 1;
     }
 
-    return matchFrom && matchTo && matchSeats && matchPill && trip.status === 'published';
+    return matchFrom && matchTo && matchSeats && matchPickup && matchDropoff && matchPill && trip.status === 'published';
   });
 
   const handleStartBooking = (trip: Trip) => {
     setBookingTrip(trip);
-    setBookingSeats(Math.min(1, trip.availableSeats));
+    setCustomPickupPoint(pickupAssemblyPoint || trip.fromArea || 'فرزة باب اليمن - جولة خولان');
+    setCustomDropoffPoint(dropoffAssemblyPoint || trip.toArea || 'فرزة الشيخ عثمان - جولة السفينة');
+    setSelectedSeatNumbers([1]); // default front VIP seat
     setBookingSuccess(false);
+  };
+
+  const handleToggleSeat = (seatNum: number) => {
+    if (!bookingTrip) return;
+    if (selectedSeatNumbers.includes(seatNum)) {
+      if (selectedSeatNumbers.length > 1) {
+        setSelectedSeatNumbers(selectedSeatNumbers.filter((s) => s !== seatNum));
+      }
+    } else {
+      if (selectedSeatNumbers.length < bookingTrip.availableSeats) {
+        setSelectedSeatNumbers([...selectedSeatNumbers, seatNum].sort());
+      }
+    }
   };
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
     if (!bookingTrip) return;
-    onBookTrip(bookingTrip.id, bookingSeats, passengerName, passengerPhone);
+    onBookTrip(
+      bookingTrip.id,
+      selectedSeatNumbers.length,
+      passengerName,
+      passengerPhone,
+      customPickupPoint || bookingTrip.fromArea,
+      customDropoffPoint || bookingTrip.toArea,
+      selectedSeatNumbers
+    );
     setBookingSuccess(true);
     setTimeout(() => {
       setBookingTrip(null);
@@ -261,6 +394,59 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed Pickup and Drop-off Assembly Points (فرزة الانطلاق والتنزيل) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-[#DCE4F0]">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#202633] flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Navigation className="w-3.5 h-3.5 text-[#0056B3]" />
+                    <span>نقطة التجمع / الفرزة في {fromCity || 'المغادرة'}:</span>
+                  </span>
+                  <span className="text-[10px] text-[#7B8494]">اختياري للفلترة</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    list="pickup-points-list"
+                    value={pickupAssemblyPoint}
+                    onChange={(e) => setPickupAssemblyPoint(e.target.value)}
+                    placeholder="مثال: فرزة باب اليمن، جولة خولان، عصر..."
+                    className="w-full h-11 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] font-medium outline-none focus:border-[#0056B3] shadow-2xs"
+                  />
+                  <datalist id="pickup-points-list">
+                    {(POPULAR_ASSEMBLY_POINTS[fromCity] || []).map((pt) => (
+                      <option key={pt} value={pt} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#202633] flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Navigation className="w-3.5 h-3.5 text-[#007AFF]" />
+                    <span>نقطة الوصول والتنزيل في {toCity || 'الوصول'}:</span>
+                  </span>
+                  <span className="text-[10px] text-[#7B8494]">اختياري للفلترة</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    list="dropoff-points-list"
+                    value={dropoffAssemblyPoint}
+                    onChange={(e) => setDropoffAssemblyPoint(e.target.value)}
+                    placeholder="مثال: فرزة الشيخ عثمان، جولة كالتكس..."
+                    className="w-full h-11 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] font-medium outline-none focus:border-[#0056B3] shadow-2xs"
+                  />
+                  <datalist id="dropoff-points-list">
+                    {(POPULAR_ASSEMBLY_POINTS[toCity] || []).map((pt) => (
+                      <option key={pt} value={pt} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
             </div>
@@ -539,15 +725,44 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                         </div>
                       </div>
 
-                      {/* 4. BOOK CTA BUTTON */}
-                      <button
-                        onClick={() => handleStartBooking(trip)}
-                        disabled={trip.availableSeats === 0}
-                        className="w-full h-12 rounded-xl bg-[#0056B3] hover:bg-[#1769FF] disabled:bg-gray-200 disabled:text-gray-400 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-[#0056B3]/25 cursor-pointer active:scale-[0.98]"
-                      >
-                        <Car className="w-4 h-4" />
-                        <span>{trip.availableSeats > 0 ? 'حجز مقعد الآن' : 'المقاعد مكتملة'}</span>
-                      </button>
+                      {/* Intermediate Stops along the Route */}
+                      {trip.intermediateStops && trip.intermediateStops.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-[#7B8494] bg-[#F5F7FB] px-3 py-2 rounded-xl border border-[#DCE4F0]">
+                          <span className="font-bold text-[#0056B3] flex items-center gap-1">
+                            <Navigation className="w-3.5 h-3.5" />
+                            <span>المحطات الوسيطة:</span>
+                          </span>
+                          {trip.intermediateStops.map((stop, sIdx) => (
+                            <span key={sIdx} className="inline-flex items-center gap-1 text-[#202633] font-semibold">
+                              <span>{stop}</span>
+                              {sIdx < (trip.intermediateStops?.length || 0) - 1 && (
+                                <span className="text-[#0056B3] font-bold">←</span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* 4. ACTIONS: BOOK & SHARE VIA WHATSAPP */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          onClick={() => handleStartBooking(trip)}
+                          disabled={trip.availableSeats === 0}
+                          className="flex-1 h-12 rounded-xl bg-[#0056B3] hover:bg-[#1769FF] disabled:bg-gray-200 disabled:text-gray-400 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-[#0056B3]/25 cursor-pointer active:scale-[0.98]"
+                        >
+                          <Car className="w-4 h-4" />
+                          <span>{trip.availableSeats > 0 ? 'حجز مقعد الآن' : 'المقاعد مكتملة'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleShareTrip(trip)}
+                          className="h-12 px-3.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-[#128C7E] flex items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer shrink-0"
+                          title="مشاركة تفاصيل الرحلة ورقم اللوحة والسائق عبر واتساب"
+                        >
+                          <Share2 className="w-4 h-4 text-[#25D366]" />
+                          <span className="hidden sm:inline">مشاركة</span>
+                        </button>
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -632,25 +847,47 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4 text-xs pt-1 text-[#202633]">
+                      <div className="flex flex-wrap items-center gap-3 text-xs pt-1 text-[#202633]">
                         <span>المقاعد المحجوزة: <strong className="text-[#245BDB]">{booking.seatsCount} مقعد</strong></span>
                         <span>الإجمالي: <strong className="text-[#245BDB]">{booking.totalAmount.toLocaleString()} ريال</strong></span>
+                        {booking.pickupPoint && (
+                          <span className="text-[11px] text-[#7B8494] bg-[#F5F7FB] px-2 py-0.5 rounded-md border border-[#DCE4F0]">
+                            الانطلاق: {booking.pickupPoint}
+                          </span>
+                        )}
+                        {booking.dropoffPoint && (
+                          <span className="text-[11px] text-[#7B8494] bg-[#F5F7FB] px-2 py-0.5 rounded-md border border-[#DCE4F0]">
+                            الوصول: {booking.dropoffPoint}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Actions: Chat & Rating */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    {/* Actions: Chat, Rating & WhatsApp Share */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      {trip && (
+                        <button
+                          type="button"
+                          onClick={() => handleShareTrip(trip, booking)}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-[#128C7E] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          title="مشاركة بيانات الرحلة والأمان والسائق عبر واتساب"
+                        >
+                          <Share2 className="w-4 h-4 text-[#25D366]" />
+                          <span>مشاركة الأمان</span>
+                        </button>
+                      )}
+
                       {canChat ? (
                         <button
                           onClick={() => onOpenChat(booking.id)}
                           className="px-4 py-2.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-[#245BDB]/20"
                         >
                           <MessageSquare className="w-4 h-4" />
-                          <span>فتح المحادثة مع السائق</span>
+                          <span>فتح المحادثة</span>
                         </button>
                       ) : (
                         <div className="text-[11px] text-[#7B8494] bg-[#F5F7FB] px-3 py-2 rounded-xl border border-[#DCE4F0]">
-                          تُفتح المحادثة بعد قبول السائق وتأكيد الرحلة
+                          تُفتح المحادثة بعد قبول السائق
                         </div>
                       )}
 
@@ -688,12 +925,12 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
       {/* BOOKING MODAL POPUP */}
       <AnimatePresence>
         {bookingTrip && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-6 shadow-2xl text-[#202633]"
+              className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-5 shadow-2xl text-[#202633] my-8 max-h-[92vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
                 <div className="flex items-center gap-2.5">
@@ -735,7 +972,7 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                     <div className="flex justify-between font-bold text-[#202633]">
                       <span>مسار الرحلة:</span>
                       <span className="text-[#245BDB]">
-                        {bookingTrip.fromCity} ({bookingTrip.fromArea}) ← {bookingTrip.toCity} ({bookingTrip.toArea})
+                        {bookingTrip.fromCity} ← {bookingTrip.toCity}
                       </span>
                     </div>
                     <div className="flex justify-between text-[#7B8494]">
@@ -744,32 +981,149 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                     </div>
                     <div className="flex justify-between text-[#7B8494]">
                       <span>السيارة والسائق:</span>
-                      <span className="text-[#202633] font-semibold">{bookingTrip.vehicleModel} - {bookingTrip.driverName}</span>
+                      <span className="text-[#202633] font-semibold">{bookingTrip.vehicleModel} ({bookingTrip.vehiclePlate}) - {bookingTrip.driverName}</span>
+                    </div>
+                  </div>
+
+                  {/* VISUAL HILUX SEAT PICKER INTERFACE */}
+                  <div className="space-y-2.5 p-4 rounded-2xl bg-[#F8FAFC] border border-[#245BDB]/20">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-black text-[#202633] flex items-center gap-1.5">
+                        <Users className="w-4 h-4 text-[#245BDB]" />
+                        <span>اختيار المقاعد (كابينة تويوتا هايلكس غمارتين):</span>
+                      </label>
+                      <span className="text-xs font-bold text-[#245BDB] bg-white px-2 py-0.5 rounded-lg border border-[#245BDB]/25">
+                        {selectedSeatNumbers.length} مقاعد محددة
+                      </span>
+                    </div>
+
+                    {/* Hilux Vehicle Visual Box */}
+                    <div className="p-3.5 rounded-2xl bg-white border border-[#DCE4F0] space-y-3 shadow-inner">
+                      {/* Dashboard / AC Wind indicator */}
+                      <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#EAF2FF] text-[#0056B3] text-[10px] font-bold border border-[#0056B3]/20">
+                        <span className="flex items-center gap-1">
+                          <Wind className="w-3 h-3 text-[#0056B3]" />
+                          <span>مقدمة الهايلكس • تكييف مركزي مباشر</span>
+                        </span>
+                        <span>الزجاج الأمامي 🚗</span>
+                      </div>
+
+                      {/* Row 1: Front Cabin (Driver + Front VIP Seat) */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-[#7B8494] font-bold block">الصف الأمامي (المقدمة):</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Driver seat */}
+                          <div className="p-3 rounded-xl bg-gray-100 border border-gray-200 text-center select-none opacity-60">
+                            <span className="text-xs text-gray-400 block">🛞</span>
+                            <span className="text-xs font-bold text-gray-500">السائق</span>
+                            <span className="text-[10px] text-gray-400 block mt-0.5">محجوز للنقيب</span>
+                          </div>
+
+                          {/* Front VIP Seat (1) */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSeat(1)}
+                            className={`p-3 rounded-xl border text-center transition-all cursor-pointer relative ${
+                              selectedSeatNumbers.includes(1)
+                                ? 'bg-linear-to-b from-[#0056B3] to-[#007AFF] text-white border-[#0056B3] shadow-md ring-2 ring-[#0056B3]/30 scale-[1.02]'
+                                : 'bg-[#EAF2FF]/60 hover:bg-[#EAF2FF] border-[#245BDB]/30 text-[#202633]'
+                            }`}
+                          >
+                            <span className="text-xs block">👑</span>
+                            <span className="text-xs font-black block">مقعد المقدمة VIP</span>
+                            <span className={`text-[10px] block mt-0.5 ${selectedSeatNumbers.includes(1) ? 'text-white/90 font-bold' : 'text-[#245BDB] font-semibold'}`}>
+                              {selectedSeatNumbers.includes(1) ? '✓ تم الاختيار' : 'واسع ومريح'}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Rear Cabin (3 Passenger Seats) */}
+                      <div className="space-y-1 pt-1">
+                        <span className="text-[10px] text-[#7B8494] font-bold block">الصف الخلفي (3 مقاعد):</span>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { num: 2, label: 'نافذة (يسار)', icon: '🪟' },
+                            { num: 3, label: 'الوسط', icon: '💺' },
+                            { num: 4, label: 'نافذة (يمين)', icon: '🪟' },
+                          ].map((seat) => {
+                            const isSelected = selectedSeatNumbers.includes(seat.num);
+                            const isAvailable = bookingTrip.availableSeats >= seat.num;
+
+                            return (
+                              <button
+                                key={seat.num}
+                                type="button"
+                                disabled={!isAvailable}
+                                onClick={() => handleToggleSeat(seat.num)}
+                                className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer relative ${
+                                  !isAvailable
+                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50'
+                                    : isSelected
+                                    ? 'bg-linear-to-b from-[#0056B3] to-[#007AFF] text-white border-[#0056B3] shadow-md ring-2 ring-[#0056B3]/30 scale-[1.02]'
+                                    : 'bg-white hover:bg-[#F5F7FB] border-[#DCE4F0] text-[#202633]'
+                                }`}
+                              >
+                                <span className="text-xs block">{seat.icon}</span>
+                                <span className="text-[11px] font-bold block mt-0.5">{seat.label}</span>
+                                <span className={`text-[9px] block mt-0.5 ${isSelected ? 'text-white font-bold' : 'text-[#7B8494]'}`}>
+                                  {!isAvailable ? 'محجوز' : isSelected ? '✓ محدد' : `مقعد ${seat.num}`}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Assembly Points Inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-[#202633] flex items-center gap-1">
+                        <Navigation className="w-3.5 h-3.5 text-[#0056B3]" />
+                        <span>نقطة التجمع (الفرزة):</span>
+                      </label>
+                      <input
+                        type="text"
+                        list="modal-pickup-list"
+                        required
+                        value={customPickupPoint}
+                        onChange={(e) => setCustomPickupPoint(e.target.value)}
+                        placeholder="فرزة باب اليمن، عصر..."
+                        className="w-full h-10 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] font-medium outline-none focus:border-[#0056B3]"
+                      />
+                      <datalist id="modal-pickup-list">
+                        {(POPULAR_ASSEMBLY_POINTS[bookingTrip.fromCity] || []).map((p) => (
+                          <option key={p} value={p} />
+                        ))}
+                      </datalist>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-[#202633] flex items-center gap-1">
+                        <Navigation className="w-3.5 h-3.5 text-[#007AFF]" />
+                        <span>نقطة الوصول والتنزيل:</span>
+                      </label>
+                      <input
+                        type="text"
+                        list="modal-dropoff-list"
+                        required
+                        value={customDropoffPoint}
+                        onChange={(e) => setCustomDropoffPoint(e.target.value)}
+                        placeholder="فرزة الشيخ عثمان..."
+                        className="w-full h-10 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] font-medium outline-none focus:border-[#0056B3]"
+                      />
+                      <datalist id="modal-dropoff-list">
+                        {(POPULAR_ASSEMBLY_POINTS[bookingTrip.toCity] || []).map((p) => (
+                          <option key={p} value={p} />
+                        ))}
+                      </datalist>
                     </div>
                   </div>
 
                   {/* Passenger Name & Phone */}
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-[#202633]">عدد المقاعد:</label>
-                      <div className="flex items-center gap-3">
-                        <select
-                          value={bookingSeats}
-                          onChange={(e) => setBookingSeats(Number(e.target.value))}
-                          className="flex-1 h-12 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-bold outline-none focus:border-[#1769FF]"
-                        >
-                          {Array.from({ length: bookingTrip.availableSeats }, (_, i) => i + 1).map((n) => (
-                            <option key={n} value={n}>
-                              {n} {n === 1 ? 'مقعد واحد' : 'مقاعد'}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="text-xs text-[#7B8494]">
-                          (المتاح: {bookingTrip.availableSeats} مقاعد)
-                        </span>
-                      </div>
-                    </div>
-
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#202633]">اسم الراكب بالكامل:</label>
                       <input
@@ -777,40 +1131,43 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
                         required
                         value={passengerName}
                         onChange={(e) => setPassengerName(e.target.value)}
-                        placeholder="مثال: محمد صالح العمري"
-                        className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                        placeholder="محمد صالح العمري"
+                        className="w-full h-10 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-[#202633]">رقم هاتف الراكب (للتواصل في اليمن):</label>
+                      <label className="text-xs font-bold text-[#202633]">رقم هاتف الراكب:</label>
                       <input
                         type="tel"
                         required
                         value={passengerPhone}
                         onChange={(e) => setPassengerPhone(e.target.value)}
-                        placeholder="مثال: 773456789"
-                        className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-mono font-semibold outline-none text-left focus:border-[#1769FF]"
+                        placeholder="773456789"
+                        className="w-full h-10 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-mono font-semibold outline-none text-left focus:border-[#1769FF]"
                       />
                     </div>
                   </div>
 
                   {/* Total calculation */}
                   <div className="p-4 rounded-2xl bg-[#EAF2FF] border border-[#245BDB]/30 flex items-center justify-between">
-                    <span className="text-xs text-[#15356B] font-bold">المبلغ الإجمالي المطلوب:</span>
+                    <div>
+                      <span className="text-xs text-[#15356B] font-bold block">المبلغ الإجمالي المطلوب:</span>
+                      <span className="text-[10px] text-[#7B8494]">({selectedSeatNumbers.length} مقاعد × {bookingTrip.pricePerSeat.toLocaleString()} ريال)</span>
+                    </div>
                     <span className="text-xl font-black text-[#245BDB] tabular-nums">
-                      {(bookingSeats * bookingTrip.pricePerSeat).toLocaleString()} ريال يمني
+                      {(selectedSeatNumbers.length * bookingTrip.pricePerSeat).toLocaleString()} ريال يمني
                     </span>
                   </div>
 
                   <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                    * تدفع قيمة المقعد نقداً للسائق عند الركوب أو حسب الاتفاق، وتتكفل المنصة بمطابقة البيانات وتوفير وسيلة تواصل آمنة.
+                    * تدفع قيمة المقعد نقداً للسائق عند الركوب، وتتكفل المنصة بمطابقة البيانات وتوفير وسيلة تواصل آمنة.
                   </p>
 
                   <div className="flex items-center gap-3 pt-2">
                     <button
                       type="submit"
-                      className="flex-1 h-12 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#245BDB]/25 transition-all"
+                      className="flex-1 h-12 rounded-xl bg-linear-to-r from-[#0056B3] to-[#007AFF] hover:opacity-95 text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#0056B3]/25 transition-all"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>تأكيد الحجز الآن</span>
@@ -827,6 +1184,21 @@ export const PassengerView: React.FC<PassengerViewProps> = ({
               )}
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* TOAST FEEDBACK ALERT */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#128C7E] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-xs font-bold border border-white/20"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>{toastMessage}</span>
+          </motion.div>
         )}
       </AnimatePresence>
 

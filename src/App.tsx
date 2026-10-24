@@ -34,6 +34,15 @@ export default function App() {
   // Splash state
   const [showSplash, setShowSplash] = useState<boolean>(true);
   
+  // Auth state & Bottom Nav visibility rule
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('wasla_user_authenticated') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   // App state
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [settings, setSettings] = useState<SystemSettings>(INITIAL_SETTINGS);
@@ -41,6 +50,27 @@ export default function App() {
   const [trips, setTrips] = useState<Trip[]>(INITIAL_TRIPS);
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
+
+  // Authentication login / logout handlers
+  const handleUserLogin = (role: UserRole) => {
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem('wasla_user_authenticated', 'true');
+    } catch {
+      // ignore
+    }
+    navigateToRole(role);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    try {
+      localStorage.removeItem('wasla_user_authenticated');
+    } catch {
+      // ignore
+    }
+    setCurrentRole(null);
+  };
 
   // Active Modals: Chat, Support, Install, Privacy Center, Settings & Notifications
   const [activeChatBookingId, setActiveChatBookingId] = useState<string | null>(null);
@@ -214,7 +244,15 @@ export default function App() {
   const currentDriver = drivers[0]; // Ahmed Al-Shami
 
   // Passenger actions
-  const handleBookTrip = (tripId: string, seatsCount: number, name: string, phone: string) => {
+  const handleBookTrip = (
+    tripId: string,
+    seatsCount: number,
+    name: string,
+    phone: string,
+    pickupPoint?: string,
+    dropoffPoint?: string,
+    seatNumbers?: number[]
+  ) => {
     const trip = trips.find((t) => t.id === tripId);
     if (!trip) return;
 
@@ -228,6 +266,9 @@ export default function App() {
       passengerName: name,
       passengerPhone: phone,
       seatsCount,
+      seatNumbers: seatNumbers || [],
+      pickupPoint: pickupPoint || trip.fromArea,
+      dropoffPoint: dropoffPoint || trip.toArea,
       pricePerSeat: trip.pricePerSeat,
       totalAmount,
       commissionAmount,
@@ -241,6 +282,16 @@ export default function App() {
     setTrips((prev) =>
       prev.map((t) =>
         t.id === tripId ? { ...t, availableSeats: Math.max(0, t.availableSeats - seatsCount) } : t
+      )
+    );
+  };
+
+  const handleUpdateTripSeats = (tripId: string, newAvailableSeats: number) => {
+    setTrips((prev) =>
+      prev.map((t) =>
+        t.id === tripId
+          ? { ...t, availableSeats: Math.max(0, Math.min(t.totalSeats, newAvailableSeats)) }
+          : t
       )
     );
   };
@@ -500,7 +551,7 @@ export default function App() {
             {currentRole === null ? (
               /* THE MAIN DASHBOARD SCREEN (Immediately follows the introduction) */
               <MainRoleSelectScreen
-                onSelectRole={(role) => navigateToRole(role)}
+                onSelectRole={(role) => handleUserLogin(role)}
                 onReplayIntro={() => setShowSplash(true)}
                 onOpenSupport={() => openModalSafely(setShowSupportModal, 'support')}
                 onOpenInstall={() => openModalSafely(setShowInstallModal, 'install')}
@@ -546,6 +597,7 @@ export default function App() {
                 }}
                 onOpenSettings={() => openModalSafely(setShowDriverSettings, 'driver_settings')}
                 onBackToHome={() => navigateToRole(null)}
+                onUpdateTripSeats={handleUpdateTripSeats}
               />
             ) : (
               /* ADMIN DASHBOARD & VERIFICATION VIEW */
@@ -632,12 +684,12 @@ export default function App() {
               }}
               onLogout={() => {
                 setShowPassengerSettings(false);
-                setCurrentRole(null);
+                handleLogout();
               }}
               onAccountDeleted={(phone) => {
                 setShowPassengerSettings(false);
                 handleAccountDeleted(phone);
-                setCurrentRole(null);
+                handleLogout();
               }}
               customerPhone={settings.customerServicePhone}
             />
@@ -657,12 +709,12 @@ export default function App() {
               }}
               onLogout={() => {
                 setShowDriverSettings(false);
-                setCurrentRole(null);
+                handleLogout();
               }}
               onAccountDeleted={(phone) => {
                 setShowDriverSettings(false);
                 handleAccountDeleted(phone);
-                setCurrentRole(null);
+                handleLogout();
               }}
               customerPhone={settings.customerServicePhone}
             />
@@ -738,14 +790,16 @@ export default function App() {
             </div>
           </footer>
 
-          {/* PERSISTENT BOTTOM NAVIGATION BAR (APP DOCK) */}
-          <BottomNavBar
-            activeTab={getBottomNavTab()}
-            currentRole={currentRole}
-            unreadNotificationsCount={2}
-            activeTripsCount={activeTripsCount}
-            onSelectTab={handleBottomNavSelect}
-          />
+          {/* PERSISTENT BOTTOM NAVIGATION BAR (APP DOCK) - ONLY VISIBLE WHEN USER IS AUTHENTICATED */}
+          {isAuthenticated && (
+            <BottomNavBar
+              activeTab={getBottomNavTab()}
+              currentRole={currentRole}
+              unreadNotificationsCount={2}
+              activeTripsCount={activeTripsCount}
+              onSelectTab={handleBottomNavSelect}
+            />
+          )}
         </>
       )}
     </div>

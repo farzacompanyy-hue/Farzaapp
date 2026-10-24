@@ -19,6 +19,9 @@ import {
   FileCheck,
   Settings,
   ArrowRight,
+  Minus,
+  X,
+  Navigation,
 } from 'lucide-react';
 
 interface DriverViewProps {
@@ -34,6 +37,7 @@ interface DriverViewProps {
   onOpenChat: (bookingId: string) => void;
   onOpenSettings?: () => void;
   onBackToHome?: () => void;
+  onUpdateTripSeats?: (tripId: string, newAvailableSeats: number) => void;
 }
 
 export const DriverView: React.FC<DriverViewProps> = ({
@@ -49,6 +53,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
   onOpenChat,
   onOpenSettings,
   onBackToHome,
+  onUpdateTripSeats,
 }) => {
   const [activeTab, setActiveTab] = useState<'trips' | 'bookings' | 'commissions'>('bookings');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -58,6 +63,8 @@ export const DriverView: React.FC<DriverViewProps> = ({
   const [fromArea, setFromArea] = useState<string>('حدة - جولة الرويشان');
   const [toCity, setToCity] = useState<string>('عدن');
   const [toArea, setToArea] = useState<string>('المنصورة - جولة كالتكس');
+  const [intermediateStops, setIntermediateStops] = useState<string[]>(['ذمار (جولة رداع)', 'إب (المعاين)']);
+  const [newStopInput, setNewStopInput] = useState<string>('');
   const [date, setDate] = useState<string>('2026-10-21');
   const [departureTime, setDepartureTime] = useState<string>('06:00 صباحاً');
   const [totalSeats, setTotalSeats] = useState<number>(5);
@@ -107,6 +114,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
       fromArea,
       toCity,
       toArea,
+      intermediateStops,
       date,
       departureTime,
       totalSeats,
@@ -455,17 +463,82 @@ export const DriverView: React.FC<DriverViewProps> = ({
                 {trip.fromCity} ({trip.fromArea}) ← {trip.toCity} ({trip.toArea})
               </div>
 
+              {/* Intermediate Stops along the Route */}
+              {trip.intermediateStops && trip.intermediateStops.length > 0 && (
+                <div className="p-2.5 rounded-xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 text-xs">
+                  <span className="text-[#0056B3] font-bold text-[11px] flex items-center gap-1">
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>المحطات والمدن الوسيطة على المسار:</span>
+                  </span>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {trip.intermediateStops.map((stop, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="px-2 py-0.5 rounded-lg bg-white border border-[#DCE4F0] text-[11px] font-semibold text-[#202633] flex items-center gap-1 shadow-2xs"
+                      >
+                        <span>{stop}</span>
+                        {sIdx < (trip.intermediateStops?.length || 0) - 1 && (
+                          <span className="text-[#245BDB] font-bold">←</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Seat Count Updater Control for Driver */}
+              <div className="p-3.5 rounded-2xl bg-[#EAF2FF]/60 border border-[#245BDB]/25 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-[#202633] block">تعديل المقاعد الشاغرة فوراً:</span>
+                    <span className="text-[11px] text-[#7B8494]">
+                      المتبقي للحجز: <strong className="text-[#0056B3] font-mono text-sm font-black">{trip.availableSeats}</strong> من {trip.totalSeats}
+                    </span>
+                  </div>
+                  {/* Dynamic Stepper */}
+                  <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-[#245BDB]/25 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateTripSeats && onUpdateTripSeats(trip.id, Math.max(0, trip.availableSeats - 1))}
+                      disabled={trip.availableSeats <= 0}
+                      className="w-8 h-8 rounded-lg bg-[#F5F7FB] hover:bg-rose-50 text-rose-600 disabled:opacity-30 disabled:hover:bg-transparent flex items-center justify-center font-black cursor-pointer transition-colors shadow-2xs"
+                      title="إنقاص مقعد شاغر (تم الحجز يدوياً)"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-7 text-center font-mono font-black text-sm text-[#0056B3]">
+                      {trip.availableSeats}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateTripSeats && onUpdateTripSeats(trip.id, Math.min(trip.totalSeats, trip.availableSeats + 1))}
+                      disabled={trip.availableSeats >= trip.totalSeats}
+                      className="w-8 h-8 rounded-lg bg-[#0056B3] hover:bg-[#1769FF] text-white disabled:opacity-30 disabled:hover:bg-[#0056B3] flex items-center justify-center font-black cursor-pointer transition-colors shadow-2xs"
+                      title="زيادة مقعد شاغر (إلغاء حجز أو تفريغ مقعد)"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                {trip.availableSeats === 0 && (
+                  <div className="text-[11px] text-amber-700 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 text-center">
+                    تم اكتمال المقاعد بالكامل في هذه الرحلة
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs">
                 <div>
-                  <div className="text-[#7B8494]">المقاعد الشاغرة</div>
-                  <div className="text-sm font-bold text-[#202633] mt-0.5">
-                    <span className="text-[#245BDB]">{trip.availableSeats}</span> / {trip.totalSeats}
+                  <div className="text-[#7B8494]">سعر المقعد</div>
+                  <div className="text-sm font-bold text-[#202633] mt-0.5 font-mono">
+                    {trip.pricePerSeat.toLocaleString()} ريال
                   </div>
                 </div>
                 <div>
-                  <div className="text-[#7B8494]">سعر المقعد</div>
-                  <div className="text-sm font-bold text-[#202633] mt-0.5">
-                    {trip.pricePerSeat.toLocaleString()} ريال
+                  <div className="text-[#7B8494]">حالة الرحلة</div>
+                  <div className="text-sm font-bold text-emerald-600 mt-0.5 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>منشورة ومتاحة</span>
                   </div>
                 </div>
               </div>
@@ -727,6 +800,98 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
                     />
                   </div>
+                </div>
+
+                {/* Intermediate Stops along the Route */}
+                <div className="space-y-2 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/20">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
+                      <Navigation className="w-3.5 h-3.5 text-[#245BDB]" />
+                      <span>المحطات والمدن الوسيطة (اختياري)</span>
+                    </label>
+                    <span className="text-[10px] text-[#7B8494]">تتيح للركاب النزول أو الصعود في الطريق</span>
+                  </div>
+
+                  {/* Add Stop Input */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newStopInput}
+                      onChange={(e) => setNewStopInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newStopInput.trim() && !intermediateStops.includes(newStopInput.trim())) {
+                            setIntermediateStops([...intermediateStops, newStopInput.trim()]);
+                            setNewStopInput('');
+                          }
+                        }
+                      }}
+                      placeholder="أدخل اسم محطة أو فرزة وسيطة (مثال: ذمار، يريم)..."
+                      className="flex-1 h-10 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] outline-none focus:border-[#245BDB]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newStopInput.trim() && !intermediateStops.includes(newStopInput.trim())) {
+                          setIntermediateStops([...intermediateStops, newStopInput.trim()]);
+                          setNewStopInput('');
+                        }
+                      }}
+                      className="h-10 px-3.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white text-xs font-bold cursor-pointer transition-colors"
+                    >
+                      + إضافة
+                    </button>
+                  </div>
+
+                  {/* Predefined Quick Suggestion Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] text-[#7B8494] font-semibold">مقترحات شائعة:</span>
+                    {['ذمار (جولة رداع)', 'يريم', 'إب (المعاين)', 'القاعدة', 'لحج (العند)', 'طور الباحة', 'معبر'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          if (intermediateStops.includes(preset)) {
+                            setIntermediateStops(intermediateStops.filter((s) => s !== preset));
+                          } else {
+                            setIntermediateStops([...intermediateStops, preset]);
+                          }
+                        }}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
+                          intermediateStops.includes(preset)
+                            ? 'bg-[#245BDB] text-white border-[#245BDB]'
+                            : 'bg-white text-[#7B8494] hover:text-[#202633] border-[#DCE4F0]'
+                        }`}
+                      >
+                        {intermediateStops.includes(preset) ? '✓ ' : '+ '}
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Currently Added Stops Tags */}
+                  {intermediateStops.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#DCE4F0]">
+                      <span className="text-[10px] font-bold text-[#245BDB]">المحطات المحددة:</span>
+                      {intermediateStops.map((stop, sIdx) => (
+                        <span
+                          key={sIdx}
+                          className="px-2 py-0.5 rounded-lg bg-white border border-[#245BDB]/30 text-xs font-bold text-[#202633] flex items-center gap-1.5 shadow-2xs"
+                        >
+                          <span>{stop}</span>
+                          <button
+                            type="button"
+                            onClick={() => setIntermediateStops(intermediateStops.filter((_, idx) => idx !== sIdx))}
+                            className="text-rose-500 hover:text-rose-700 font-black cursor-pointer text-xs"
+                            title="حذف"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
