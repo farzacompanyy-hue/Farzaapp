@@ -66,12 +66,61 @@ export interface Trip {
   totalSeats: number;
   availableSeats: number;
   pricePerSeat: number; // in YER
+  charterPrice?: number; // Private full Toyota Hilux charter package price in YER
+  isFamilyFriendly?: boolean; // Cultural privacy & family/female dedicated seating
+  allowCargo?: boolean; // Wasla Express parcel delivery service
+  cargoMinPrice?: number; // Minimum parcel shipment rate in YER
+  maxLuggagePieces?: number; // Max capacity of Toyota Hilux pickup bed
   vehicleModel: string;
   vehicleColor: string;
   vehiclePlate: string;
   vehiclePhoto: string;
   notes?: string;
   status: TripStatus;
+  createdAt: string;
+}
+
+export interface LuggageDetails {
+  smallBags: number; // Handbags in cabin (included)
+  largeBags: number; // Large suitcase in Hilux pickup bed
+  heavyBoxes: number; // Heavy freight carton
+}
+
+export interface CargoDetails {
+  packageType: string; // 'مستندات وأوراق' | 'حقيبة / طرد شخصي' | 'بضاعة تجارية / كرتون' | 'أخرى'
+  description: string;
+  weightKg?: number;
+  receiverName: string;
+  receiverPhone: string;
+  receiverArea?: string;
+}
+
+export interface Review {
+  id: string;
+  driverId: string;
+  passengerId: string;
+  passengerName: string;
+  passengerPhoto?: string;
+  tripId: string;
+  bookingId: string;
+  rating: number; // 1 to 5
+  comment: string;
+  createdAt: string;
+}
+
+export interface SOSAlert {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhone: string;
+  userRole: UserRole;
+  tripId?: string;
+  bookingId?: string;
+  coordinates?: { latitude: number; longitude: number };
+  addressText?: string;
+  driverName?: string;
+  vehiclePlate?: string;
+  status: 'active' | 'responded' | 'resolved';
   createdAt: string;
 }
 
@@ -82,6 +131,7 @@ export interface Booking {
   passengerName: string;
   passengerPhone: string;
   passengerPhoto?: string;
+  bookingType?: 'seats' | 'cargo' | 'charter';
   seatsCount: number;
   seatNumbers?: number[];
   pickupPoint?: string; // e.g. 'فرزة باب اليمن - جولة خولان'
@@ -90,6 +140,9 @@ export interface Booking {
   totalAmount: number; // in YER
   commissionAmount: number; // 20%
   status: BookingStatus;
+  luggage?: LuggageDetails;
+  cargoDetails?: CargoDetails;
+  isFullVehicleCharter?: boolean;
   paymentRef?: string;
   paymentBank?: string;
   paymentReceiptUrl?: string;
@@ -97,6 +150,8 @@ export interface Booking {
   commissionApprovedAt?: string;
   createdAt: string;
   hasRated?: boolean;
+  ratingScore?: number;
+  ratingComment?: string;
 }
 
 export interface ChatMessage {

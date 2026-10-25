@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trip, Booking, City, Driver } from '../types';
+import { Trip, Booking, City, Driver, Review } from '../types';
 import {
   Car,
   Plus,
@@ -22,6 +22,11 @@ import {
   Minus,
   X,
   Navigation,
+  Briefcase,
+  Package,
+  HeartHandshake,
+  Star,
+  MessageCircle,
 } from 'lucide-react';
 
 interface DriverViewProps {
@@ -29,6 +34,7 @@ interface DriverViewProps {
   trips: Trip[];
   bookings: Booking[];
   cities: City[];
+  reviews?: Review[];
   commissionRate: number;
   onCreateTrip: (newTrip: Partial<Trip>) => void;
   onAcceptBooking: (bookingId: string) => void;
@@ -45,6 +51,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
   trips,
   bookings,
   cities,
+  reviews = [],
   commissionRate = 20,
   onCreateTrip,
   onAcceptBooking,
@@ -55,7 +62,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
   onBackToHome,
   onUpdateTripSeats,
 }) => {
-  const [activeTab, setActiveTab] = useState<'trips' | 'bookings' | 'commissions'>('bookings');
+  const [activeTab, setActiveTab] = useState<'trips' | 'bookings' | 'commissions' | 'reviews'>('bookings');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
 
   // New Trip State
@@ -69,7 +76,12 @@ export const DriverView: React.FC<DriverViewProps> = ({
   const [departureTime, setDepartureTime] = useState<string>('06:00 صباحاً');
   const [totalSeats, setTotalSeats] = useState<number>(5);
   const [pricePerSeat, setPricePerSeat] = useState<number>(12000);
-  const [notes, setNotes] = useState<string>('هايلكس حديثة ومكيفة، مقاعد مريحة.');
+  const [charterPrice, setCharterPrice] = useState<number>(50000);
+  const [isFamilyFriendly, setIsFamilyFriendly] = useState<boolean>(true);
+  const [allowCargo, setAllowCargo] = useState<boolean>(true);
+  const [cargoMinPrice, setCargoMinPrice] = useState<number>(3000);
+  const [maxLuggagePieces, setMaxLuggagePieces] = useState<number>(8);
+  const [notes, setNotes] = useState<string>('هايلكس حديثة ومكيفة، مقاعد مريحة وحوض مؤمّن للأمتعة والطرود.');
   const [vehiclePhoto, setVehiclePhoto] = useState<string>(
     driver.vehicle.photoUrl || 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=600&fit=crop'
   );
@@ -100,6 +112,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
   const driverBookings = bookings.filter((b) =>
     driverTrips.some((t) => t.id === b.tripId)
   );
+  const driverReviews = reviews.filter((r) => r.driverId === driver.id);
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +133,11 @@ export const DriverView: React.FC<DriverViewProps> = ({
       totalSeats,
       availableSeats: totalSeats,
       pricePerSeat,
+      charterPrice,
+      isFamilyFriendly,
+      allowCargo,
+      cargoMinPrice,
+      maxLuggagePieces,
       vehicleModel: driver.vehicle.model,
       vehicleColor: driver.vehicle.color,
       vehiclePlate: driver.vehicle.plateNumber,
@@ -142,10 +160,18 @@ export const DriverView: React.FC<DriverViewProps> = ({
     }, 1500);
   };
 
+  // WhatsApp Contact to Passenger
+  const handleWhatsAppPassenger = (bk: Booking) => {
+    const cleanPhone = bk.passengerPhone.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('967') ? cleanPhone : `967${cleanPhone}`;
+    const text = `السلام عليكم أخي ${bk.passengerName}، حياك الله معك كابتن ${driver.name} بخصوص حجزك #${bk.id} في منصة وَصْلَة.`;
+    window.open(`https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-8 bg-[#FFFFFF] text-[#202633]">
       {/* DRIVER PROFILE HEADER CARD (Soft Gray & Royal Blue Accents) */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="p-6 sm:p-8 rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           {onBackToHome && (
             <button
@@ -163,10 +189,10 @@ export const DriverView: React.FC<DriverViewProps> = ({
               src={driver.photo}
               alt={driver.name}
               referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-[#245BDB] shadow-xs"
+              className="w-16 h-16 rounded-2xl object-cover border-2 border-[#0056B3] shadow-xs"
             />
             {driver.verifiedBadge && (
-              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#245BDB] text-white flex items-center justify-center font-black text-xs shadow-md">
+              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#0056B3] text-white flex items-center justify-center font-black text-xs shadow-md">
                 ✓
               </span>
             )}
@@ -175,15 +201,19 @@ export const DriverView: React.FC<DriverViewProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-black text-[#202633]">{driver.name}</h2>
-              <span className="text-xs font-bold text-[#245BDB] bg-[#EAF2FF] px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-[#245BDB]/30">
+              <span className="text-xs font-bold text-[#0056B3] bg-[#EAF2FF] px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-[#0056B3]/30">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 سائق موثّق ✓
+              </span>
+              <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-amber-300">
+                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                {driver.rating.toFixed(1)} ({driverReviews.length || 3} تقييمات)
               </span>
             </div>
             <div className="text-xs text-[#7B8494] mt-1 flex flex-wrap items-center gap-3">
               <span>الهاتف: <strong className="text-[#202633] font-mono">{driver.phone}</strong></span>
               <span>·</span>
-              <span>السيارة المعتمدة: <strong className="text-[#245BDB]">{driver.vehicle.model} ({driver.vehicle.color})</strong></span>
+              <span>السيارة المعتمدة: <strong className="text-[#0056B3]">{driver.vehicle.model} ({driver.vehicle.color})</strong></span>
               <span>·</span>
               <span>رقم اللوحة: <strong className="text-[#202633] font-mono">{driver.vehicle.plateNumber}</strong></span>
             </div>
@@ -195,7 +225,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
           {onOpenSettings && (
             <button
               onClick={onOpenSettings}
-              className="px-4 py-3 rounded-2xl bg-white hover:bg-[#EAF2FF] text-[#245BDB] border border-[#245BDB]/25 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              className="px-4 py-3 rounded-2xl bg-white hover:bg-[#EAF2FF] text-[#0056B3] border border-[#0056B3]/25 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-xs cursor-pointer"
               title="إعدادات السائق مثل واتساب"
             >
               <Settings className="w-4 h-4" />
@@ -204,7 +234,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
           )}
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-5 py-3 rounded-2xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md shadow-[#245BDB]/20 cursor-pointer active:scale-[0.98]"
+            className="px-5 py-3 rounded-2xl bg-[#0056B3] hover:bg-[#007AFF] text-white font-black text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md shadow-[#0056B3]/20 cursor-pointer active:scale-[0.98]"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>نشر رحلة جديدة</span>
@@ -212,27 +242,27 @@ export const DriverView: React.FC<DriverViewProps> = ({
         </div>
       </div>
 
-      {/* 4-METRIC STAT GRID (Apple iOS 18 Design Aesthetics) */}
+      {/* 4-METRIC STAT GRID */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* 1. Active Trips */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-1 shadow-xs hover:border-[#0056B3]/30 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
             <span>الرحلات المنشورة</span>
-            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#0056B3] flex items-center justify-center">
               <Car className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[#202633] tabular-nums font-mono">
             {driverTrips.length}
           </div>
-          <div className="text-[11px] text-[#245BDB] font-semibold">رحلات معلنة نشطة</div>
+          <div className="text-[11px] text-[#0056B3] font-semibold">رحلات معلنة نشطة</div>
         </div>
 
         {/* 2. Total Bookings */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-1 shadow-xs hover:border-[#0056B3]/30 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
-            <span>طلبات الركاب</span>
-            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
+            <span>طلبات الركاب والطرود</span>
+            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#0056B3] flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
           </div>
@@ -245,10 +275,10 @@ export const DriverView: React.FC<DriverViewProps> = ({
         </div>
 
         {/* 3. Confirmed Revenue */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-1 shadow-xs hover:border-[#0056B3]/30 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
             <span>الإيراد المتوقع</span>
-            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#245BDB] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#0056B3] flex items-center justify-center">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
@@ -262,7 +292,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
         </div>
 
         {/* 4. Farza Commission Rate */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 shadow-xs hover:border-[#245BDB]/30 transition-colors">
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-1 shadow-xs hover:border-[#0056B3]/30 transition-colors">
           <div className="flex items-center justify-between text-xs text-[#7B8494] font-bold">
             <span>عمولة المنصة</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -277,18 +307,18 @@ export const DriverView: React.FC<DriverViewProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#245BDB]/15 pb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0056B3]/15 pb-4">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab('bookings')}
             className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'bookings'
-                ? 'bg-[#245BDB] text-white shadow-sm'
+                ? 'bg-[#0056B3] text-white shadow-sm'
                 : 'text-[#7B8494] hover:text-[#202633] bg-[#F5F7FB] border border-[#DCE4F0]'
             }`}
           >
-            <span>طلبات الحجز الواردة</span>
-            <span className="w-5 h-5 rounded-full bg-[#1769FF] text-white text-[10px] flex items-center justify-center font-bold">
+            <span>طلبات الحجز والطرود</span>
+            <span className="w-5 h-5 rounded-full bg-[#007AFF] text-white text-[10px] flex items-center justify-center font-bold">
               {driverBookings.length}
             </span>
           </button>
@@ -296,16 +326,27 @@ export const DriverView: React.FC<DriverViewProps> = ({
             onClick={() => setActiveTab('trips')}
             className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               activeTab === 'trips'
-                ? 'bg-[#245BDB] text-white shadow-sm'
+                ? 'bg-[#0056B3] text-white shadow-sm'
                 : 'text-[#7B8494] hover:text-[#202633] bg-[#F5F7FB] border border-[#DCE4F0]'
             }`}
           >
             رحلاتي المنشورة ({driverTrips.length})
           </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'reviews'
+                ? 'bg-[#0056B3] text-white shadow-sm'
+                : 'text-[#7B8494] hover:text-[#202633] bg-[#F5F7FB] border border-[#DCE4F0]'
+            }`}
+          >
+            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span>تقييمات الركاب ({driverReviews.length || 3})</span>
+          </button>
         </div>
 
         <div className="text-xs text-[#7B8494]">
-          نسبة عمولة منصة وَصْلَة: <strong className="text-[#245BDB] font-bold">{commissionRate}%</strong>
+          نسبة عمولة منصة وَصْلَة: <strong className="text-[#0056B3] font-bold">{commissionRate}%</strong>
         </div>
       </div>
 
@@ -313,10 +354,10 @@ export const DriverView: React.FC<DriverViewProps> = ({
       {activeTab === 'bookings' && (
         <div className="space-y-4">
           {driverBookings.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-3">
+            <div className="p-12 text-center rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-3">
               <Users className="w-12 h-12 text-[#7B8494] mx-auto opacity-50" />
               <p className="text-sm font-bold text-[#202633]">لا توجد طلبات حجز حالياً</p>
-              <p className="text-xs text-[#7B8494]">عندما يقوم راكب بطلب مقعد في رحلتك، سيظهر هنا فوراً للموافقة عليه.</p>
+              <p className="text-xs text-[#7B8494]">عندما يقوم راكب بطلب مقعد أو طرد في رحلتك، سيظهر هنا فوراً للموافقة عليه.</p>
             </div>
           ) : (
             driverBookings.map((bk) => {
@@ -327,115 +368,171 @@ export const DriverView: React.FC<DriverViewProps> = ({
               return (
                 <div
                   key={bk.id}
-                  className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] hover:border-[#1769FF] transition-all shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+                  className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] hover:border-[#007AFF] transition-all shadow-sm space-y-4"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-[#245BDB] bg-[#EAF2FF] px-2.5 py-1 rounded-md border border-[#245BDB]/30 font-bold">
-                        طلب #{bk.id}
-                      </span>
-                      {bk.status === 'pending_driver' && (
-                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-300 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          بانتظار قبولك
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#DCE4F0] pb-4">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="text-xs font-mono text-[#0056B3] bg-[#EAF2FF] px-2.5 py-1 rounded-md border border-[#0056B3]/30 font-bold">
+                          طلب #{bk.id}
                         </span>
-                      )}
-                      {bk.status === 'accepted_unpaid_commission' && (
-                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EAF2FF] text-[#1769FF] border border-[#1769FF]/40 flex items-center gap-1">
-                          <CreditCard className="w-3.5 h-3.5" />
-                          مقبول - يرجى دفع العمولة (20%)
-                        </span>
-                      )}
-                      {bk.status === 'commission_pending_verification' && (
-                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          إشعار العمولة قيد المراجعة
-                        </span>
-                      )}
-                      {bk.status === 'confirmed' && (
-                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EAF2FF] text-[#245BDB] border border-[#245BDB]/30 flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          حجز مؤكد ومفعل ✓
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="text-base font-bold text-[#202633]">
-                      الراكب: <strong className="text-[#245BDB]">{bk.passengerName}</strong> · هاتف: {bk.passengerPhone}
-                    </div>
-
-                    {trip && (
-                      <div className="text-xs text-[#7B8494]">
-                        مسار الرحلة: {trip.fromCity} ({trip.fromArea}) ← {trip.toCity} ({trip.toArea}) · {trip.date} ({trip.departureTime})
+                        {bk.bookingType === 'cargo' && (
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                            <Package className="w-3 h-3" />
+                            شحنة طرد WASLA Express
+                          </span>
+                        )}
+                        {bk.isFullVehicleCharter && (
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-300 flex items-center gap-1">
+                            <HeartHandshake className="w-3 h-3" />
+                            حجز كامل للسيارة
+                          </span>
+                        )}
+                        {bk.status === 'pending_driver' && (
+                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-300 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            بانتظار قبولك
+                          </span>
+                        )}
+                        {bk.status === 'accepted_unpaid_commission' && (
+                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EAF2FF] text-[#007AFF] border border-[#007AFF]/40 flex items-center gap-1">
+                            <CreditCard className="w-3.5 h-3.5" />
+                            مقبول - يرجى دفع العمولة (20%)
+                          </span>
+                        )}
+                        {bk.status === 'commission_pending_verification' && (
+                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            إشعار العمولة قيد المراجعة
+                          </span>
+                        )}
+                        {bk.status === 'confirmed' && (
+                          <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EAF2FF] text-[#0056B3] border border-[#0056B3]/30 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            حجز مؤكد ومفعل ✓
+                          </span>
+                        )}
                       </div>
-                    )}
+
+                      <div className="text-base font-bold text-[#202633]">
+                        العميل: <strong className="text-[#0056B3]">{bk.passengerName}</strong> · هاتف: {bk.passengerPhone}
+                      </div>
+
+                      {trip && (
+                        <div className="text-xs text-[#7B8494]">
+                          مسار الرحلة: {trip.fromCity} ({bk.pickupPoint || trip.fromArea}) ← {trip.toCity} ({bk.dropoffPoint || trip.toArea}) · {trip.date} ({trip.departureTime})
+                        </div>
+                      )}
+                    </div>
 
                     {/* Financial Breakdown Table */}
-                    <div className="mt-3 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/15 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#0056B3]/15 grid grid-cols-3 gap-2 text-center text-xs">
                       <div className="space-y-0.5">
-                        <span className="text-[10px] text-[#7B8494] font-bold">إجمالي الأجرة ({bk.seatsCount} مقاعد)</span>
+                        <span className="text-[10px] text-[#7B8494] font-bold">
+                          {bk.bookingType === 'cargo' ? 'أجرة الشحنة' : `الأجرة (${bk.seatsCount} مقاعد)`}
+                        </span>
                         <div className="font-black text-[#202633] font-mono text-sm">
                           {bk.totalAmount.toLocaleString()} ريال
                         </div>
                       </div>
                       <div className="space-y-0.5 border-x border-[#DCE4F0]">
-                        <span className="text-[10px] text-[#245BDB] font-bold">عمولة وَصْلَة (20%)</span>
-                        <div className="font-black text-[#245BDB] font-mono text-sm">
+                        <span className="text-[10px] text-[#0056B3] font-bold">عمولة المنصة ({commissionRate}%)</span>
+                        <div className="font-black text-[#0056B3] font-mono text-sm">
                           {bk.commissionAmount.toLocaleString()} ريال
                         </div>
                       </div>
                       <div className="space-y-0.5">
                         <span className="text-[10px] text-emerald-700 font-bold">صافي دخل السائق</span>
-                        <div className="font-black text-emerald-700 font-mono text-sm">
+                        <div className="font-black text-emerald-600 font-mono text-sm">
                           {(bk.totalAmount - bk.commissionAmount).toLocaleString()} ريال
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Driver Actions per Booking Status */}
-                  <div className="flex flex-wrap items-center gap-3 shrink-0">
-                    {/* Stage 1: Accept / Reject */}
-                    {bk.status === 'pending_driver' && (
-                      <>
-                        <button
-                          onClick={() => onAcceptBooking(bk.id)}
-                          className="px-4 py-2.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>قبول الراكب</span>
-                        </button>
-                        <button
-                          onClick={() => onRejectBooking(bk.id)}
-                          className="px-4 py-2.5 rounded-xl bg-[#F5F7FB] hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold cursor-pointer transition-all"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          <span>رفض</span>
-                        </button>
-                      </>
-                    )}
+                  {/* CARGO & LUGGAGE INFO ON BOOKING CARD */}
+                  {bk.cargoDetails && (
+                    <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs space-y-1">
+                      <div className="font-bold text-emerald-950 flex items-center gap-1.5">
+                        <Package className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>بيانات الطرد في حوض الهايلكس: {bk.cargoDetails.packageType} ({bk.cargoDetails.description})</span>
+                      </div>
+                      <div className="text-emerald-800 text-[11px] flex flex-wrap gap-4">
+                        <span>مستلم الطرد: <strong>{bk.cargoDetails.receiverName}</strong></span>
+                        <span>هاتف المستلم: <strong>{bk.cargoDetails.receiverPhone}</strong></span>
+                        <span>الوزن: <strong>{bk.cargoDetails.weightKg || 5} كجم</strong></span>
+                      </div>
+                    </div>
+                  )}
 
-                    {/* Stage 2: Pay 20% Commission to Farza */}
-                    {canPayCommission && (
-                      <button
-                        onClick={() => setPayingBooking(bk)}
-                        className="px-4 py-2.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-[#245BDB]/25 transition-all"
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        <span>دفع العمولة (20%) وإرفاق الإشعار</span>
-                      </button>
-                    )}
+                  {bk.luggage && (
+                    <div className="p-3 rounded-xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs flex items-center gap-4 text-[#7B8494]">
+                      <span className="font-bold text-[#202633] flex items-center gap-1">
+                        <Briefcase className="w-3.5 h-3.5 text-[#0056B3]" />
+                        <span>حمولة الأمتعة للراكب:</span>
+                      </span>
+                      <span>{bk.luggage.largeBags} حقائب كبيرة بالحوض</span>
+                      <span>·</span>
+                      <span>{bk.luggage.heavyBoxes} كراتين</span>
+                      <span>·</span>
+                      <span>{bk.luggage.smallBags} حقيبة كابينة</span>
+                    </div>
+                  )}
 
-                    {/* If confirmed or under review, Chat is unlocked */}
-                    {isChatActive && (
+                  {/* Actions: Accept, Reject, Pay Commission, WhatsApp, Chat */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => onOpenChat(bk.id)}
-                        className="px-4 py-2.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs flex items-center gap-2 cursor-pointer shadow-md transition-all"
+                        type="button"
+                        onClick={() => handleWhatsAppPassenger(bk)}
+                        className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                        title="مراسلة الراكب عبر واتساب"
                       >
-                        <MessageSquare className="w-4 h-4" />
-                        <span>فتح المحادثة مع الراكب</span>
+                        <MessageCircle className="w-4 h-4 text-emerald-600" />
+                        <span>واتساب الراكب</span>
                       </button>
-                    )}
+
+                      {isChatActive && (
+                        <button
+                          onClick={() => onOpenChat(bk.id)}
+                          className="px-4 py-2 rounded-xl bg-[#0056B3] hover:bg-[#007AFF] text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>فتح المحادثة الفورية</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {bk.status === 'pending_driver' && (
+                        <>
+                          <button
+                            onClick={() => onAcceptBooking(bk.id)}
+                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>قبول الطلب</span>
+                          </button>
+                          <button
+                            onClick={() => onRejectBooking(bk.id)}
+                            className="px-3 py-2 rounded-xl bg-[#F5F7FB] text-rose-600 hover:bg-rose-50 border border-rose-200 font-bold text-xs cursor-pointer"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            <span>اعتذار</span>
+                          </button>
+                        </>
+                      )}
+
+                      {canPayCommission && (
+                        <button
+                          onClick={() => setPayingBooking(bk)}
+                          className="px-4 py-2 rounded-xl bg-linear-to-r from-[#0056B3] to-[#007AFF] text-white font-black text-xs flex items-center gap-1.5 shadow-md cursor-pointer animate-pulse"
+                        >
+                          <Receipt className="w-4 h-4" />
+                          <span>دفع العمولة وتفعيل التواصل ({bk.commissionAmount.toLocaleString()} ريال)</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -447,108 +544,165 @@ export const DriverView: React.FC<DriverViewProps> = ({
       {/* TAB CONTENT: TRIPS */}
       {activeTab === 'trips' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {driverTrips.map((trip) => (
-            <div
-              key={trip.id}
-              className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] hover:border-[#1769FF] transition-all shadow-sm space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#245BDB] bg-[#EAF2FF] px-3 py-1 rounded-full border border-[#245BDB]/30">
-                  رحلة نشطة
-                </span>
-                <span className="text-xs text-[#7B8494]">{trip.date}</span>
-              </div>
+          {driverTrips.map((trip) => {
+            const bookedCount = trip.totalSeats - trip.availableSeats;
+            const tripBookings = driverBookings.filter((b) => b.tripId === trip.id);
+            const totalLargeLuggage = tripBookings.reduce(
+              (acc, b) => acc + (b.luggage?.largeBags || 0) + (b.luggage?.heavyBoxes || 0),
+              0
+            );
 
-              <div className="text-base font-black text-[#202633]">
-                {trip.fromCity} ({trip.fromArea}) ← {trip.toCity} ({trip.toArea})
-              </div>
-
-              {/* Intermediate Stops along the Route */}
-              {trip.intermediateStops && trip.intermediateStops.length > 0 && (
-                <div className="p-2.5 rounded-xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-1 text-xs">
-                  <span className="text-[#0056B3] font-bold text-[11px] flex items-center gap-1">
-                    <Navigation className="w-3.5 h-3.5" />
-                    <span>المحطات والمدن الوسيطة على المسار:</span>
+            return (
+              <div
+                key={trip.id}
+                className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] hover:border-[#007AFF] transition-all shadow-sm space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#0056B3]" />
+                    <h3 className="text-base font-black text-[#202633]">
+                      {trip.fromCity} ← {trip.toCity}
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono text-[#0056B3] bg-[#EAF2FF] px-2.5 py-1 rounded-md border border-[#0056B3]/30 font-bold">
+                    #{trip.id}
                   </span>
-                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    {trip.intermediateStops.map((stop, sIdx) => (
-                      <span
-                        key={sIdx}
-                        className="px-2 py-0.5 rounded-lg bg-white border border-[#DCE4F0] text-[11px] font-semibold text-[#202633] flex items-center gap-1 shadow-2xs"
-                      >
-                        <span>{stop}</span>
-                        {sIdx < (trip.intermediateStops?.length || 0) - 1 && (
-                          <span className="text-[#245BDB] font-bold">←</span>
-                        )}
+                </div>
+
+                <div className="text-xs text-[#7B8494] space-y-1">
+                  <div>نقطة الانطلاق: <strong className="text-[#202633]">{trip.fromArea}</strong></div>
+                  <div>نقطة الوصول: <strong className="text-[#202633]">{trip.toArea}</strong></div>
+                  {trip.intermediateStops && trip.intermediateStops.length > 0 && (
+                    <div className="text-[11px] text-[#0056B3] font-semibold">
+                      المحطات الوسيطة: {trip.intermediateStops.join(' ← ')}
+                    </div>
+                  )}
+                </div>
+
+                {/* HILUX BED CAPACITY & CARGO SUMMARY */}
+                <div className="p-3 rounded-2xl bg-[#F5F7FB] border border-[#0056B3]/20 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#202633] flex items-center gap-1.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#0056B3]" />
+                      <span>حالة حوض الهايلكس والأمتعة:</span>
+                    </span>
+                    <span className="font-mono font-bold text-[#0056B3]">
+                      {totalLargeLuggage} / {trip.maxLuggagePieces || 8} أمتعة مشحونة
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-[#DCE4F0] overflow-hidden">
+                    <div
+                      className="h-full bg-[#0056B3] rounded-full"
+                      style={{
+                        width: `${Math.min(100, (totalLargeLuggage / (trip.maxLuggagePieces || 8)) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* DYNAMIC SEATS STEPPER CONTROLLER */}
+                <div className="p-3.5 rounded-2xl bg-white border border-[#0056B3]/25 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-[#202633] block">
+                        تعديل المقاعد الشاغرة ديناميكياً:
                       </span>
+                      <span className="text-[10px] text-[#7B8494]">
+                        إجمالي سعة السيارة: {trip.totalSeats} مقاعد
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-[#F5F7FB] p-1 rounded-xl border border-[#DCE4F0]">
+                      <button
+                        type="button"
+                        onClick={() => onUpdateTripSeats && onUpdateTripSeats(trip.id, Math.max(0, trip.availableSeats - 1))}
+                        disabled={trip.availableSeats <= 0}
+                        className="w-8 h-8 rounded-lg bg-white hover:bg-rose-50 text-rose-600 disabled:opacity-30 flex items-center justify-center font-black cursor-pointer shadow-2xs"
+                        title="إنقاص مقعد شاغر"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="w-7 text-center font-mono font-black text-sm text-[#0056B3]">
+                        {trip.availableSeats}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onUpdateTripSeats && onUpdateTripSeats(trip.id, Math.min(trip.totalSeats, trip.availableSeats + 1))}
+                        disabled={trip.availableSeats >= trip.totalSeats}
+                        className="w-8 h-8 rounded-lg bg-[#0056B3] hover:bg-[#007AFF] text-white disabled:opacity-30 flex items-center justify-center font-black cursor-pointer shadow-2xs"
+                        title="زيادة مقعد شاغر"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs">
+                  <div>
+                    <div className="text-[#7B8494]">سعر المقعد</div>
+                    <div className="text-sm font-bold text-[#202633] mt-0.5 font-mono">
+                      {trip.pricePerSeat.toLocaleString()} ريال
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[#7B8494]">موعد الانطلاق</div>
+                    <div className="text-sm font-bold text-[#0056B3] mt-0.5 font-mono">
+                      {trip.date} ({trip.departureTime})
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* TAB CONTENT: PASSENGER REVIEWS */}
+      {activeTab === 'reviews' && (
+        <div className="space-y-4">
+          <div className="p-6 rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-300 flex items-center justify-center text-amber-500 shadow-xs">
+                <Star className="w-8 h-8 fill-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-[#202633]">تقييمات ركاب منصة وَصْلَة</h3>
+                <p className="text-xs text-[#7B8494] mt-0.5">
+                  متوسط تقييمك العام: <strong className="text-amber-600 font-bold">{driver.rating.toFixed(1)} من 5 نجوم</strong>
+                </p>
+              </div>
+            </div>
+            <div className="text-left bg-white px-4 py-2.5 rounded-2xl border border-[#DCE4F0]">
+              <span className="text-xs text-[#7B8494] block">نسبة الالتزام بالخدمة</span>
+              <span className="text-base font-black text-emerald-600 font-mono">99.2% موثق</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {driverReviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="p-5 rounded-2xl bg-white border border-[#DCE4F0] space-y-2.5 shadow-xs"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-[#202633]">{rev.passengerName}</span>
+                  <div className="flex items-center gap-0.5 text-amber-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-amber-400' : 'text-gray-200'}`}
+                      />
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* Dynamic Seat Count Updater Control for Driver */}
-              <div className="p-3.5 rounded-2xl bg-[#EAF2FF]/60 border border-[#245BDB]/25 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-[#202633] block">تعديل المقاعد الشاغرة فوراً:</span>
-                    <span className="text-[11px] text-[#7B8494]">
-                      المتبقي للحجز: <strong className="text-[#0056B3] font-mono text-sm font-black">{trip.availableSeats}</strong> من {trip.totalSeats}
-                    </span>
-                  </div>
-                  {/* Dynamic Stepper */}
-                  <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-[#245BDB]/25 shadow-2xs">
-                    <button
-                      type="button"
-                      onClick={() => onUpdateTripSeats && onUpdateTripSeats(trip.id, Math.max(0, trip.availableSeats - 1))}
-                      disabled={trip.availableSeats <= 0}
-                      className="w-8 h-8 rounded-lg bg-[#F5F7FB] hover:bg-rose-50 text-rose-600 disabled:opacity-30 disabled:hover:bg-transparent flex items-center justify-center font-black cursor-pointer transition-colors shadow-2xs"
-                      title="إنقاص مقعد شاغر (تم الحجز يدوياً)"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-7 text-center font-mono font-black text-sm text-[#0056B3]">
-                      {trip.availableSeats}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onUpdateTripSeats && onUpdateTripSeats(trip.id, Math.min(trip.totalSeats, trip.availableSeats + 1))}
-                      disabled={trip.availableSeats >= trip.totalSeats}
-                      className="w-8 h-8 rounded-lg bg-[#0056B3] hover:bg-[#1769FF] text-white disabled:opacity-30 disabled:hover:bg-[#0056B3] flex items-center justify-center font-black cursor-pointer transition-colors shadow-2xs"
-                      title="زيادة مقعد شاغر (إلغاء حجز أو تفريغ مقعد)"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                {trip.availableSeats === 0 && (
-                  <div className="text-[11px] text-amber-700 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 text-center">
-                    تم اكتمال المقاعد بالكامل في هذه الرحلة
-                  </div>
-                )}
+                <p className="text-xs text-[#555] leading-relaxed">"{rev.comment}"</p>
+                <span className="text-[10px] text-[#7B8494] block text-left">
+                  {new Date(rev.createdAt).toLocaleDateString('ar-YE')}
+                </span>
               </div>
-
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs">
-                <div>
-                  <div className="text-[#7B8494]">سعر المقعد</div>
-                  <div className="text-sm font-bold text-[#202633] mt-0.5 font-mono">
-                    {trip.pricePerSeat.toLocaleString()} ريال
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[#7B8494]">حالة الرحلة</div>
-                  <div className="text-sm font-bold text-emerald-600 mt-0.5 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>منشورة ومتاحة</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-xs text-[#7B8494] flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#245BDB]" />
-                الانطلاق: <strong className="text-[#202633]">{trip.departureTime}</strong>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
@@ -565,9 +719,9 @@ export const DriverView: React.FC<DriverViewProps> = ({
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-6 shadow-2xl text-[#202633]"
+              className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#0056B3]/30 p-6 sm:p-8 space-y-6 shadow-2xl text-[#202633]"
             >
-              <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
+              <div className="flex items-center justify-between border-b border-[#0056B3]/15 pb-4">
                 <div className="flex items-center gap-2.5">
                   <button
                     onClick={() => setPayingBooking(null)}
@@ -578,7 +732,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     <span>رجوع</span>
                   </button>
                   <div className="flex items-center gap-2">
-                    <Receipt className="w-5 h-5 text-[#245BDB]" />
+                    <Receipt className="w-5 h-5 text-[#0056B3]" />
                     <h3 className="text-lg font-black text-[#202633]">دفع عمولة منصة وَصْلَة (20%)</h3>
                   </div>
                 </div>
@@ -592,7 +746,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
 
               {receiptSubmitted ? (
                 <div className="p-8 text-center space-y-3">
-                  <div className="w-16 h-16 rounded-full bg-[#EAF2FF] border border-[#245BDB] text-[#245BDB] flex items-center justify-center mx-auto animate-bounce">
+                  <div className="w-16 h-16 rounded-full bg-[#EAF2FF] border border-[#0056B3] text-[#0056B3] flex items-center justify-center mx-auto animate-bounce">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <h4 className="text-xl font-black text-[#202633]">تم إرسال إشعار الدفع بنجاح!</h4>
@@ -602,27 +756,25 @@ export const DriverView: React.FC<DriverViewProps> = ({
                 </div>
               ) : (
                 <form onSubmit={handleCommissionSubmit} className="space-y-4">
-                  {/* Amount Breakdown */}
-                  <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-2 text-xs">
+                  <div className="p-4 rounded-2xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-2 text-xs">
                     <div className="flex justify-between text-[#7B8494]">
                       <span>قيمة الحجز ({payingBooking.seatsCount} مقعد):</span>
                       <span className="text-[#202633] font-bold">{payingBooking.totalAmount.toLocaleString()} ريال</span>
                     </div>
                     <div className="flex justify-between text-[#202633] font-bold text-sm pt-1 border-t border-[#DCE4F0]">
-                      <span className="text-[#245BDB]">المبلغ المطلوب دفعه لوَصْلَة (20%):</span>
-                      <span className="text-[#245BDB] text-base font-black">
+                      <span className="text-[#0056B3]">المبلغ المطلوب دفعه لوَصْلَة (20%):</span>
+                      <span className="text-[#0056B3] text-base font-black">
                         {payingBooking.commissionAmount.toLocaleString()} ريال يمني
                       </span>
                     </div>
                   </div>
 
-                  {/* Yemen Official Bank Accounts */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#202633]">بيانات التحويل البنكي المعتمد</label>
                     <div className="p-3 rounded-xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs space-y-1.5">
                       <div className="flex justify-between">
                         <span className="text-[#7B8494]">بنك الكريمي (حساب تجاري):</span>
-                        <span className="font-mono text-[#245BDB] font-bold">120488219</span>
+                        <span className="font-mono text-[#0056B3] font-bold">120488219</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#7B8494]">كاك بنك (CAC Bank):</span>
@@ -635,13 +787,12 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Bank Used */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#202633]">البنك المُحوّل منه</label>
                     <select
                       value={selectedBank}
                       onChange={(e) => setSelectedBank(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#007AFF]"
                     >
                       <option value="بنك الكريمي للتمويل الأصغر">بنك الكريمي للتمويل الأصغر</option>
                       <option value="كاك بنك (CAC Bank)">كاك بنك (CAC Bank)</option>
@@ -650,49 +801,24 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     </select>
                   </div>
 
-                  {/* Reference Number */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#202633]">رقم العملية / المرجع</label>
+                    <label className="text-xs font-bold text-[#202633]">رقم الحوالة أو السند المرجعي</label>
                     <input
                       type="text"
                       required
                       value={refNumber}
                       onChange={(e) => setRefNumber(e.target.value)}
-                      placeholder="أدخل رقم الإيصال البنكي"
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-mono font-bold outline-none text-left focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-mono font-bold outline-none focus:border-[#007AFF]"
                     />
                   </div>
-
-                  {/* Receipt Preview */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#202633] flex items-center justify-between">
-                      <span>صورة إيصال التحويل</span>
-                      <span className="text-[10px] text-[#245BDB]">تم إرفاق إيصال افتراضي تجريبي</span>
-                    </label>
-                    <div className="h-24 w-full rounded-xl overflow-hidden border border-[#DCE4F0] bg-slate-900 relative">
-                      <img
-                        src={uploadedReceipt}
-                        alt="Receipt"
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-xs text-white gap-1.5">
-                        <Upload className="w-4 h-4 text-[#245BDB]" />
-                        <span>إيصال التحويل جاهز للمراجعة</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-[#7B8494] leading-relaxed">
-                    * ملاحظة أمنية: لا يتم اعتبار الدفع ناجحاً إلا بعد تحقق إدارة وَصْلَة وتأكيد المبلغ في الحساب البنكي.
-                  </p>
 
                   <div className="flex items-center gap-3 pt-2">
                     <button
                       type="submit"
-                      className="flex-1 h-12 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#245BDB]/25 transition-all"
+                      className="flex-1 h-12 rounded-xl bg-[#0056B3] hover:bg-[#007AFF] text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#0056B3]/25 transition-all"
                     >
                       <FileCheck className="w-4 h-4" />
-                      <span>إرسال طلب التحقق من الدفع</span>
+                      <span>إرسال إشعار السداد للمراجعة</span>
                     </button>
                     <button
                       type="button"
@@ -722,9 +848,9 @@ export const DriverView: React.FC<DriverViewProps> = ({
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#245BDB]/30 p-6 sm:p-8 space-y-5 shadow-2xl my-8 text-[#202633]"
+              className="relative max-w-lg w-full rounded-3xl bg-[#FFFFFF] border border-[#0056B3]/30 p-6 sm:p-8 space-y-5 shadow-2xl my-8 text-[#202633]"
             >
-              <div className="flex items-center justify-between border-b border-[#245BDB]/15 pb-4">
+              <div className="flex items-center justify-between border-b border-[#0056B3]/15 pb-4">
                 <div className="flex items-center gap-2.5">
                   <button
                     onClick={() => setShowCreateModal(false)}
@@ -735,7 +861,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     <span>رجوع</span>
                   </button>
                   <div className="flex items-center gap-2">
-                    <Plus className="w-5 h-5 text-[#245BDB]" />
+                    <Plus className="w-5 h-5 text-[#0056B3]" />
                     <h3 className="text-lg font-black text-[#202633]">نشر رحلة جديدة للسائق</h3>
                   </div>
                 </div>
@@ -754,7 +880,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     <select
                       value={fromCity}
                       onChange={(e) => setFromCity(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold outline-none focus:border-[#007AFF]"
                     >
                       {cities.map((c) => (
                         <option key={c.id} value={c.nameAr || (c as any).name}>
@@ -770,7 +896,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       required
                       value={fromArea}
                       onChange={(e) => setFromArea(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#007AFF]"
                     />
                   </div>
                 </div>
@@ -781,7 +907,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     <select
                       value={toCity}
                       onChange={(e) => setToCity(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold outline-none focus:border-[#007AFF]"
                     >
                       {cities.map((c) => (
                         <option key={c.id} value={c.nameAr || (c as any).name}>
@@ -797,22 +923,21 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       required
                       value={toArea}
                       onChange={(e) => setToArea(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#007AFF]"
                     />
                   </div>
                 </div>
 
                 {/* Intermediate Stops along the Route */}
-                <div className="space-y-2 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/20">
+                <div className="space-y-2 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#0056B3]/20">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-                      <Navigation className="w-3.5 h-3.5 text-[#245BDB]" />
+                      <Navigation className="w-3.5 h-3.5 text-[#0056B3]" />
                       <span>المحطات والمدن الوسيطة (اختياري)</span>
                     </label>
                     <span className="text-[10px] text-[#7B8494]">تتيح للركاب النزول أو الصعود في الطريق</span>
                   </div>
 
-                  {/* Add Stop Input */}
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
@@ -828,7 +953,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                         }
                       }}
                       placeholder="أدخل اسم محطة أو فرزة وسيطة (مثال: ذمار، يريم)..."
-                      className="flex-1 h-10 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] outline-none focus:border-[#245BDB]"
+                      className="flex-1 h-10 px-3 rounded-xl bg-white border border-[#DCE4F0] text-xs text-[#202633] outline-none focus:border-[#0056B3]"
                     />
                     <button
                       type="button"
@@ -838,46 +963,19 @@ export const DriverView: React.FC<DriverViewProps> = ({
                           setNewStopInput('');
                         }
                       }}
-                      className="h-10 px-3.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white text-xs font-bold cursor-pointer transition-colors"
+                      className="h-10 px-3.5 rounded-xl bg-[#0056B3] hover:bg-[#007AFF] text-white text-xs font-bold cursor-pointer transition-colors"
                     >
                       + إضافة
                     </button>
                   </div>
 
-                  {/* Predefined Quick Suggestion Chips */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    <span className="text-[10px] text-[#7B8494] font-semibold">مقترحات شائعة:</span>
-                    {['ذمار (جولة رداع)', 'يريم', 'إب (المعاين)', 'القاعدة', 'لحج (العند)', 'طور الباحة', 'معبر'].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => {
-                          if (intermediateStops.includes(preset)) {
-                            setIntermediateStops(intermediateStops.filter((s) => s !== preset));
-                          } else {
-                            setIntermediateStops([...intermediateStops, preset]);
-                          }
-                        }}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer ${
-                          intermediateStops.includes(preset)
-                            ? 'bg-[#245BDB] text-white border-[#245BDB]'
-                            : 'bg-white text-[#7B8494] hover:text-[#202633] border-[#DCE4F0]'
-                        }`}
-                      >
-                        {intermediateStops.includes(preset) ? '✓ ' : '+ '}
-                        {preset}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Currently Added Stops Tags */}
                   {intermediateStops.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#DCE4F0]">
-                      <span className="text-[10px] font-bold text-[#245BDB]">المحطات المحددة:</span>
+                      <span className="text-[10px] font-bold text-[#0056B3]">المحطات المحددة:</span>
                       {intermediateStops.map((stop, sIdx) => (
                         <span
                           key={sIdx}
-                          className="px-2 py-0.5 rounded-lg bg-white border border-[#245BDB]/30 text-xs font-bold text-[#202633] flex items-center gap-1.5 shadow-2xs"
+                          className="px-2 py-0.5 rounded-lg bg-white border border-[#0056B3]/30 text-xs font-bold text-[#202633] flex items-center gap-1.5 shadow-2xs"
                         >
                           <span>{stop}</span>
                           <button
@@ -902,7 +1000,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       required
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#007AFF]"
                     />
                   </div>
                   <div className="space-y-1">
@@ -913,7 +1011,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       value={departureTime}
                       onChange={(e) => setDepartureTime(e.target.value)}
                       placeholder="06:30 صباحاً"
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#007AFF]"
                     />
                   </div>
                 </div>
@@ -924,7 +1022,7 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     <select
                       value={totalSeats}
                       onChange={(e) => setTotalSeats(Number(e.target.value))}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-bold outline-none focus:border-[#007AFF]"
                     >
                       <option value={3}>3 مقاعد</option>
                       <option value={4}>4 مقاعد</option>
@@ -940,9 +1038,58 @@ export const DriverView: React.FC<DriverViewProps> = ({
                       step="500"
                       value={pricePerSeat}
                       onChange={(e) => setPricePerSeat(Number(e.target.value))}
-                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-mono font-bold outline-none focus:border-[#1769FF]"
+                      className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-mono font-bold outline-none focus:border-[#007AFF]"
                     />
                   </div>
+                </div>
+
+                {/* YEMEN SPECIFIC: CARGO & FAMILY CHARTER EXTENSION */}
+                <div className="p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#0056B3]/20 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#202633]">
+                    <span className="flex items-center gap-1.5">
+                      <HeartHandshake className="w-4 h-4 text-purple-700" />
+                      <span>حجز السيارة كاملة للعائلات (Charter):</span>
+                    </span>
+                    <input
+                      type="number"
+                      step="1000"
+                      value={charterPrice}
+                      onChange={(e) => setCharterPrice(Number(e.target.value))}
+                      className="w-28 h-8 px-2 rounded-lg bg-white border border-[#DCE4F0] text-xs font-mono font-bold text-center"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs font-bold text-[#202633] pt-2 border-t border-[#DCE4F0]">
+                    <span className="flex items-center gap-1.5">
+                      <Package className="w-4 h-4 text-emerald-700" />
+                      <span>شحن طرود في حوض الهايلكس (WASLA Express):</span>
+                    </span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={allowCargo}
+                        onChange={(e) => setAllowCargo(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+
+                  {allowCargo && (
+                    <div className="flex items-center justify-between text-xs pt-1 text-[#7B8494]">
+                      <span>أقل سعر شحن لطرد:</span>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="500"
+                          value={cargoMinPrice}
+                          onChange={(e) => setCargoMinPrice(Number(e.target.value))}
+                          className="w-24 h-7 px-2 rounded-lg bg-white border border-[#DCE4F0] text-xs font-mono font-bold text-center"
+                        />
+                        <span>ريال</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -952,75 +1099,14 @@ export const DriverView: React.FC<DriverViewProps> = ({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="مثال: شنط متوسطة، التزام بالموعد، مكيفة..."
-                    className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#1769FF]"
+                    className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] text-xs font-semibold outline-none focus:border-[#007AFF]"
                   />
-                </div>
-
-                {/* VEHICLE PHOTO UPLOAD FIELD */}
-                <div className="space-y-2 p-3.5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/20">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-                      <Car className="w-4 h-4 text-[#245BDB]" />
-                      <span>صورة سيارة الهايلكس للرحلة</span>
-                    </label>
-                    <label
-                      htmlFor="driver-trip-vehicle-input"
-                      className="text-xs font-bold text-[#245BDB] hover:underline cursor-pointer flex items-center gap-1"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>تحميل صورة من جهازك</span>
-                    </label>
-                    <input
-                      id="driver-trip-vehicle-input"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleVehiclePhotoUpload}
-                      className="hidden"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 h-16 rounded-xl overflow-hidden border border-[#245BDB]/30 bg-slate-900 shrink-0 relative shadow-xs">
-                      <img
-                        src={vehiclePhoto}
-                        alt="Vehicle preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="space-y-1 text-xs">
-                      <div className="text-[11px] text-[#7B8494]">اختر أو ارفع صورة تظهر للركاب عند استعراض الرحلة:</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setVehiclePhoto('https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=600&fit=crop')}
-                          className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold cursor-pointer transition-colors ${
-                            vehiclePhoto.includes('1559416523')
-                              ? 'bg-[#245BDB] text-white border-[#245BDB]'
-                              : 'bg-white text-[#202633] border-[#DCE4F0] hover:bg-[#EAF2FF]'
-                          }`}
-                        >
-                          هايلكس بيضاء
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setVehiclePhoto('https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&fit=crop')}
-                          className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold cursor-pointer transition-colors ${
-                            vehiclePhoto.includes('1533473359')
-                              ? 'bg-[#245BDB] text-white border-[#245BDB]'
-                              : 'bg-white text-[#202633] border-[#DCE4F0] hover:bg-[#EAF2FF]'
-                          }`}
-                        >
-                          هايلكس سوداء
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-3">
                   <button
                     type="submit"
-                    className="flex-1 h-12 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#245BDB]/25 transition-all"
+                    className="flex-1 h-12 rounded-xl bg-[#0056B3] hover:bg-[#007AFF] text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#0056B3]/25 transition-all"
                   >
                     <span>نشر الرحلة للركاب</span>
                   </button>

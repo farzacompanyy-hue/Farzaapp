@@ -22,8 +22,22 @@ import {
   INITIAL_SETTINGS,
   YEMEN_CITIES,
   INITIAL_COMPLAINTS,
+  INITIAL_REVIEWS,
+  INITIAL_SOS_ALERTS,
 } from './data/mockData';
-import { UserRole, Trip, Booking, Driver, SystemSettings, ChatMessage, Complaint } from './types';
+import {
+  UserRole,
+  Trip,
+  Booking,
+  Driver,
+  SystemSettings,
+  ChatMessage,
+  Complaint,
+  Review,
+  SOSAlert,
+  LuggageDetails,
+  CargoDetails,
+} from './types';
 
 export default function App() {
   // Check standalone public legal URL parameter (?page=privacy | ?page=terms | ?page=delete-account)
@@ -50,6 +64,8 @@ export default function App() {
   const [trips, setTrips] = useState<Trip[]>(INITIAL_TRIPS);
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
   const [complaints, setComplaints] = useState<Complaint[]>(INITIAL_COMPLAINTS);
+  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+  const [sosAlerts, setSosAlerts] = useState<SOSAlert[]>(INITIAL_SOS_ALERTS);
 
   // Authentication login / logout handlers
   const handleUserLogin = (role: UserRole) => {
@@ -251,12 +267,21 @@ export default function App() {
     phone: string,
     pickupPoint?: string,
     dropoffPoint?: string,
-    seatNumbers?: number[]
+    seatNumbers?: number[],
+    bookingType: 'seats' | 'cargo' | 'charter' = 'seats',
+    luggage?: LuggageDetails,
+    cargoDetails?: CargoDetails,
+    isFullVehicleCharter?: boolean
   ) => {
     const trip = trips.find((t) => t.id === tripId);
     if (!trip) return;
 
-    const totalAmount = seatsCount * trip.pricePerSeat;
+    let totalAmount = seatsCount * trip.pricePerSeat;
+    if (bookingType === 'cargo') {
+      totalAmount = trip.cargoMinPrice || 3000;
+    } else if (isFullVehicleCharter) {
+      totalAmount = trip.charterPrice || Math.round(trip.totalSeats * trip.pricePerSeat * 0.95);
+    }
     const commissionAmount = Math.round(totalAmount * (settings.commissionRatePercent / 100));
 
     const newBooking: Booking = {
@@ -265,25 +290,36 @@ export default function App() {
       passengerId: 'usr-current',
       passengerName: name,
       passengerPhone: phone,
-      seatsCount,
+      bookingType,
+      seatsCount: isFullVehicleCharter ? trip.totalSeats : seatsCount,
       seatNumbers: seatNumbers || [],
       pickupPoint: pickupPoint || trip.fromArea,
       dropoffPoint: dropoffPoint || trip.toArea,
       pricePerSeat: trip.pricePerSeat,
       totalAmount,
       commissionAmount,
+      luggage,
+      cargoDetails,
+      isFullVehicleCharter,
       status: 'pending_driver',
       createdAt: new Date().toISOString(),
     };
 
     setBookings((prev) => [newBooking, ...prev]);
 
-    // Update remaining seats on trip
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === tripId ? { ...t, availableSeats: Math.max(0, t.availableSeats - seatsCount) } : t
-      )
-    );
+    // Update remaining seats on trip (only for passenger seats & charter)
+    if (bookingType !== 'cargo') {
+      setTrips((prev) =>
+        prev.map((t) =>
+          t.id === tripId
+            ? {
+                ...t,
+                availableSeats: isFullVehicleCharter ? 0 : Math.max(0, t.availableSeats - seatsCount),
+              }
+            : t
+        )
+      );
+    }
   };
 
   const handleUpdateTripSeats = (tripId: string, newAvailableSeats: number) => {
@@ -296,9 +332,47 @@ export default function App() {
     );
   };
 
-  const handleRateDriver = (bookingId: string, rating: number) => {
+  const handleRateDriver = (bookingId: string, rating: number, comment: string = '') => {
+    const booking = bookings.find((b) => b.id === bookingId);
+    const trip = booking ? trips.find((t) => t.id === booking.tripId) : undefined;
+
     setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, hasRated: true } : b))
+      prev.map((b) =>
+        b.id === bookingId
+          ? { ...b, hasRated: true, ratingScore: rating, ratingComment: comment }
+          : b
+      )
+    );
+
+    if (trip) {
+      const newReview: Review = {
+        id: `rev-${Date.now().toString().slice(-4)}`,
+        driverId: trip.driverId,
+        passengerId: booking?.passengerId || 'usr-current',
+        passengerName: booking?.passengerName || 'راكب وَصْلَة',
+        tripId: trip.id,
+        bookingId,
+        rating,
+        comment: comment || 'خدمة ممتازة وسائق متميز.',
+        createdAt: new Date().toISOString(),
+      };
+      setReviews((prev) => [newReview, ...prev]);
+    }
+  };
+
+  const handleTriggerSOS = (alertData: Omit<SOSAlert, 'id' | 'createdAt' | 'status'>) => {
+    const newAlert: SOSAlert = {
+      ...alertData,
+      id: `sos-${Date.now().toString().slice(-4)}`,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    };
+    setSosAlerts((prev) => [newAlert, ...prev]);
+  };
+
+  const handleResolveSOS = (alertId: string) => {
+    setSosAlerts((prev) =>
+      prev.map((s) => (s.id === alertId ? { ...s, status: 'resolved' } : s))
     );
   };
 
@@ -565,6 +639,7 @@ export default function App() {
                 trips={trips}
                 bookings={bookings}
                 cities={YEMEN_CITIES}
+                reviews={reviews}
                 onBookTrip={handleBookTrip}
                 onOpenChat={(bookingId) => {
                   setActiveChatBookingId(bookingId);
@@ -573,6 +648,7 @@ export default function App() {
                   }
                 }}
                 onRateDriver={handleRateDriver}
+                onTriggerSOS={handleTriggerSOS}
                 onOpenSettings={() => openModalSafely(setShowPassengerSettings, 'passenger_settings')}
                 initialTab={passengerTab}
                 onBackToHome={() => navigateToRole(null)}
@@ -584,6 +660,7 @@ export default function App() {
                 trips={trips}
                 bookings={bookings}
                 cities={YEMEN_CITIES}
+                reviews={reviews}
                 commissionRate={settings.commissionRatePercent}
                 onCreateTrip={handleCreateTrip}
                 onAcceptBooking={handleAcceptBooking}
@@ -607,11 +684,13 @@ export default function App() {
                 bookings={bookings}
                 settings={settings}
                 complaints={complaints}
+                sosAlerts={sosAlerts}
                 onApproveDriver={handleApproveDriver}
                 onRejectDriver={handleRejectDriver}
                 onApproveCommission={handleApproveCommission}
                 onRejectCommission={handleRejectCommission}
                 onUpdateSettings={handleUpdateSettings}
+                onResolveSOS={handleResolveSOS}
                 onBackToHome={() => navigateToRole(null)}
               />
             )}

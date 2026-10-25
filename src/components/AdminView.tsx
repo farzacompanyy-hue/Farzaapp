@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Driver, Trip, Booking, SystemSettings, Complaint } from '../types';
+import { Driver, Trip, Booking, SystemSettings, Complaint, SOSAlert } from '../types';
 import {
   ShieldCheck,
   Receipt,
@@ -18,6 +18,11 @@ import {
   Lock,
   LogOut,
   KeyRound,
+  AlertTriangle,
+  Package,
+  HeartHandshake,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react';
 
 interface AdminViewProps {
@@ -26,11 +31,13 @@ interface AdminViewProps {
   bookings: Booking[];
   settings: SystemSettings;
   complaints: Complaint[];
+  sosAlerts?: SOSAlert[];
   onApproveDriver: (driverId: string) => void;
   onRejectDriver: (driverId: string) => void;
   onApproveCommission: (bookingId: string) => void;
   onRejectCommission: (bookingId: string) => void;
   onUpdateSettings: (newSettings: Partial<SystemSettings>) => void;
+  onResolveSOS?: (alertId: string) => void;
   onBackToHome?: () => void;
 }
 
@@ -40,11 +47,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
   bookings,
   settings,
   complaints,
+  sosAlerts = [],
   onApproveDriver,
   onRejectDriver,
   onApproveCommission,
   onRejectCommission,
   onUpdateSettings,
+  onResolveSOS,
   onBackToHome,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -56,11 +65,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
   });
   const [passkeyInput, setPasskeyInput] = useState<string>('');
   const [authError, setAuthError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'commissions' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'commissions' | 'sos' | 'settings'>('overview');
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default secure administrative master key
     if (passkeyInput.trim() === 'wasla@admin2025' || passkeyInput.trim() === 'admin73999') {
       try {
         sessionStorage.setItem('wasla_admin_auth', 'verified_session');
@@ -91,8 +99,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-[#202633]">
-        <div className="bg-white border-2 border-[#245BDB]/20 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
-          <div className="w-16 h-16 bg-[#EAF2FF] border border-[#245BDB]/30 rounded-2xl mx-auto flex items-center justify-center text-[#245BDB] shadow-inner">
+        <div className="bg-white border-2 border-[#0056B3]/20 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
+          <div className="w-16 h-16 bg-[#EAF2FF] border border-[#0056B3]/30 rounded-2xl mx-auto flex items-center justify-center text-[#0056B3] shadow-inner">
             <Lock className="w-8 h-8" />
           </div>
 
@@ -118,7 +126,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     if (authError) setAuthError(null);
                   }}
                   placeholder="••••••••••••"
-                  className="w-full px-4 py-3 bg-[#F5F7FB] border border-[#7B8494]/30 rounded-xl text-sm font-mono focus:border-[#245BDB] focus:ring-2 focus:ring-[#245BDB]/20 outline-hidden transition-all text-center"
+                  className="w-full px-4 py-3 bg-[#F5F7FB] border border-[#7B8494]/30 rounded-xl text-sm font-mono focus:border-[#0056B3] focus:ring-2 focus:ring-[#0056B3]/20 outline-hidden transition-all text-center"
                   autoFocus
                 />
                 <KeyRound className="w-4 h-4 text-[#7B8494] absolute left-3 top-3.5 pointer-events-none" />
@@ -165,14 +173,19 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
   const pendingDrivers = drivers.filter((d) => d.verificationStatus === 'pending');
 
+  const activeSOSList = sosAlerts.filter((s) => s.status === 'active');
+
   const totalRevenueCommission = bookings
     .filter((b) => b.status === 'confirmed')
     .reduce((sum, b) => sum + b.commissionAmount, 0);
 
+  const totalCargoBookings = bookings.filter((b) => b.bookingType === 'cargo').length;
+  const totalCharterBookings = bookings.filter((b) => b.isFullVehicleCharter).length;
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-8 bg-[#FFFFFF] text-[#202633]">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#245BDB]/15 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0056B3]/15 pb-4">
         <div className="flex items-center gap-3">
           {onBackToHome && (
             <button
@@ -188,7 +201,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
           <div>
             <h2 className="text-2xl font-black text-[#202633] flex items-center gap-2">
               <span>لوحة تحكم إدارة منصة وَصْلَة</span>
-              <span className="text-xs text-[#245BDB] bg-[#EAF2FF] border border-[#245BDB]/30 px-2.5 py-0.5 rounded-full font-black">
+              <span className="text-xs text-[#0056B3] bg-[#EAF2FF] border border-[#0056B3]/30 px-2.5 py-0.5 rounded-full font-black">
                 SUPER ADMIN
               </span>
             </h2>
@@ -199,19 +212,35 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </div>
 
         {/* Tab Controls */}
-        <div className="flex flex-wrap items-center gap-1 p-1 bg-[#F5F7FB] border border-[#245BDB]/20 rounded-2xl text-xs">
+        <div className="flex flex-wrap items-center gap-1 p-1 bg-[#F5F7FB] border border-[#0056B3]/20 rounded-2xl text-xs">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-3 py-2 rounded-xl font-bold transition-all cursor-pointer ${
-              activeTab === 'overview' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
+              activeTab === 'overview' ? 'bg-[#0056B3] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
             }`}
           >
             نظرة عامة
           </button>
+
+          <button
+            onClick={() => setActiveTab('sos')}
+            className={`px-3 py-2 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'sos' ? 'bg-red-600 text-white shadow-xs' : 'text-red-700 hover:bg-red-50'
+            }`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>طوارئ SOS</span>
+            {activeSOSList.length > 0 && (
+              <span className="w-5 h-5 rounded-full bg-red-700 text-white text-[10px] flex items-center justify-center font-bold animate-pulse">
+                {activeSOSList.length}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setActiveTab('commissions')}
             className={`px-3 py-2 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === 'commissions' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
+              activeTab === 'commissions' ? 'bg-[#0056B3] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
             }`}
           >
             <span>مراجعة العمولات</span>
@@ -221,10 +250,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </span>
             )}
           </button>
+
           <button
             onClick={() => setActiveTab('drivers')}
             className={`px-3 py-2 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === 'drivers' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
+              activeTab === 'drivers' ? 'bg-[#0056B3] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
             }`}
           >
             <span>توثيق السائقين</span>
@@ -234,14 +264,16 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </span>
             )}
           </button>
+
           <button
             onClick={() => setActiveTab('settings')}
             className={`px-3 py-2 rounded-xl font-bold transition-all cursor-pointer ${
-              activeTab === 'settings' ? 'bg-[#245BDB] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
+              activeTab === 'settings' ? 'bg-[#0056B3] text-white shadow-xs' : 'text-[#7B8494] hover:text-[#202633]'
             }`}
           >
-            الإعدادات والإعلانات
+            الإعدادات
           </button>
+
           <button
             onClick={handleAdminLogout}
             className="px-3 py-2 rounded-xl font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all flex items-center gap-1.5 cursor-pointer ml-1"
@@ -259,10 +291,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-5 rounded-3xl bg-[#F5F7FB] border border-[#DCE4F0] shadow-xs">
               <div className="text-xs text-[#7B8494]">إجمالي عمولات وَصْلَة المحصلة</div>
-              <div className="text-2xl font-black text-[#245BDB] mt-2 tabular-nums">
+              <div className="text-2xl font-black text-[#0056B3] mt-2 tabular-nums">
                 {totalRevenueCommission.toLocaleString()} <span className="text-xs font-normal text-[#7B8494]">ريال</span>
               </div>
-              <div className="text-[10px] text-[#1769FF] font-semibold mt-1">نسبة العمولة: {settings.commissionRatePercent}%</div>
+              <div className="text-[10px] text-[#007AFF] font-semibold mt-1">نسبة العمولة: {settings.commissionRatePercent}%</div>
             </div>
 
             <div className="p-5 rounded-3xl bg-[#F5F7FB] border border-[#DCE4F0] shadow-xs">
@@ -274,27 +306,47 @@ export const AdminView: React.FC<AdminViewProps> = ({
             </div>
 
             <div className="p-5 rounded-3xl bg-[#F5F7FB] border border-[#DCE4F0] shadow-xs">
-              <div className="text-xs text-[#7B8494]">الرحلات المنشورة</div>
-              <div className="text-2xl font-black text-[#202633] mt-2 tabular-nums">
-                {trips.length}
+              <div className="text-xs text-[#7B8494]">شحنات WASLA Express</div>
+              <div className="text-2xl font-black text-emerald-700 mt-2 tabular-nums">
+                {totalCargoBookings}
               </div>
-              <div className="text-[10px] text-[#245BDB] font-semibold mt-1">صنعاء، عدن، تعز، إب</div>
+              <div className="text-[10px] text-emerald-600 font-semibold mt-1">طرود منقولة في الحوض</div>
             </div>
 
             <div className="p-5 rounded-3xl bg-[#F5F7FB] border border-[#DCE4F0] shadow-xs">
-              <div className="text-xs text-[#7B8494]">الحجوزات الإجمالية</div>
-              <div className="text-2xl font-black text-[#202633] mt-2 tabular-nums">
-                {bookings.length}
+              <div className="text-xs text-[#7B8494]">حجوزات العائلات الكاملة</div>
+              <div className="text-2xl font-black text-purple-700 mt-2 tabular-nums">
+                {totalCharterBookings}
               </div>
-              <div className="text-[10px] text-amber-700 font-semibold mt-1">{pendingCommissions.length} بانتظار التحقق</div>
+              <div className="text-[10px] text-purple-600 font-semibold mt-1">رحلات VIP خاصة</div>
             </div>
           </div>
 
           {/* Quick Action Alerts */}
-          {pendingCommissions.length > 0 && (
-            <div className="p-5 rounded-2xl bg-[#EAF2FF] border border-[#245BDB]/30 flex items-center justify-between gap-4">
+          {activeSOSList.length > 0 && (
+            <div className="p-5 rounded-2xl bg-red-50 border border-red-300 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-[#245BDB] shrink-0" />
+                <AlertTriangle className="w-6 h-6 text-red-600 shrink-0 animate-bounce" />
+                <div className="text-xs">
+                  <strong className="text-red-950 font-black">نداء طوارئ نشط: </strong>
+                  <span className="text-red-900">
+                    هناك {activeSOSList.length} بلاغ استغاثة SOS نشط من مسافرين على الطريق بحاجة لمتابعة فورية.
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTab('sos')}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black shrink-0 cursor-pointer shadow-md transition-all"
+              >
+                فتح غرفة العمليات
+              </button>
+            </div>
+          )}
+
+          {pendingCommissions.length > 0 && (
+            <div className="p-5 rounded-2xl bg-[#EAF2FF] border border-[#0056B3]/30 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-[#0056B3] shrink-0" />
                 <div className="text-xs">
                   <strong className="text-[#15356B]">تنبيه إداري: </strong>
                   <span className="text-[#202633]">
@@ -304,10 +356,111 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
               <button
                 onClick={() => setActiveTab('commissions')}
-                className="px-3.5 py-1.5 rounded-lg bg-[#245BDB] hover:bg-[#1769FF] text-white text-xs font-black shrink-0 cursor-pointer shadow-md transition-all"
+                className="px-3.5 py-1.5 rounded-lg bg-[#0056B3] hover:bg-[#007AFF] text-white text-xs font-black shrink-0 cursor-pointer shadow-md transition-all"
               >
                 مراجعة الآن
               </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: EMERGENCY SOS MONITOR */}
+      {activeTab === 'sos' && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-900 flex items-center justify-between">
+            <span className="font-bold flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-red-600" />
+              <span>مراقبة نداءات الاستغاثة الطارئة (SOS Emergency Control Room):</span>
+            </span>
+            <span className="font-mono text-xs font-black">{sosAlerts.length} بلاغ مسجل</span>
+          </div>
+
+          {sosAlerts.length === 0 ? (
+            <div className="p-12 text-center rounded-3xl bg-[#F5F7FB] border border-[#DCE4F0] space-y-2">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
+              <p className="text-sm font-bold text-[#202633]">لا توجد أي بلاغات طوارئ حالياً</p>
+              <p className="text-xs text-[#7B8494]">جميع الرحلات تسير بأمان على الطرق بين المدن اليمنية.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sosAlerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`p-5 rounded-2xl border space-y-3 ${
+                    alert.status === 'active'
+                      ? 'bg-red-50/80 border-red-300 shadow-sm'
+                      : 'bg-white border-[#DCE4F0]'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DCE4F0] pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
+                        alert.status === 'active'
+                          ? 'bg-red-600 text-white animate-pulse'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {alert.status === 'active' ? 'نداء استغاثة نشط' : 'تم حل البلاغ وتأمينه ✓'}
+                      </span>
+                      <span className="text-xs font-mono text-[#7B8494]">#{alert.id}</span>
+                    </div>
+                    <span className="text-xs text-[#7B8494]">
+                      {new Date(alert.createdAt).toLocaleString('ar-YE')}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <span className="text-[#7B8494] block">المستغيث:</span>
+                      <strong className="text-[#202633] text-sm">{alert.userName}</strong>
+                      <div className="font-mono text-[#0056B3]">{alert.userPhone}</div>
+                    </div>
+
+                    <div>
+                      <span className="text-[#7B8494] block">تفاصيل السائق والسيارة:</span>
+                      <strong className="text-[#202633]">{alert.driverName || 'غير محدد'}</strong>
+                      <div className="text-[11px] text-[#7B8494] font-mono">{alert.vehiclePlate || 'لوحة سيارة مسجلة'}</div>
+                    </div>
+
+                    <div>
+                      <span className="text-[#7B8494] block">الموقع الجغرافي GPS:</span>
+                      <strong className="text-[#202633]">{alert.addressText || 'طريق السفر العام'}</strong>
+                      {alert.coordinates && (
+                        <div className="font-mono text-emerald-700 font-bold text-[11px]">
+                          {alert.coordinates.latitude.toFixed(4)}, {alert.coordinates.longitude.toFixed(4)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#DCE4F0]">
+                    {alert.coordinates ? (
+                      <a
+                        href={`https://maps.google.com/?q=${alert.coordinates.latitude},${alert.coordinates.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-xl bg-white border border-[#DCE4F0] hover:border-[#0056B3] text-[#0056B3] text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-red-600" />
+                        <span>فتح الموقع على خرائط Google</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="text-xs text-[#7B8494]">إحداثيات تقريبية على الطريق</span>
+                    )}
+
+                    {alert.status === 'active' && onResolveSOS && (
+                      <button
+                        onClick={() => onResolveSOS(alert.id)}
+                        className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>تأكيد المتابعة وحل البلاغ</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -321,8 +474,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </div>
 
           {pendingCommissions.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-[#F5F7FB] border border-[#245BDB]/15 space-y-2">
-              <CheckCircle2 className="w-10 h-10 text-[#245BDB] mx-auto opacity-70" />
+            <div className="p-12 text-center rounded-3xl bg-[#F5F7FB] border border-[#0056B3]/15 space-y-2">
+              <CheckCircle2 className="w-10 h-10 text-[#0056B3] mx-auto opacity-70" />
               <p className="text-sm font-bold text-[#202633]">لا توجد عمليات عمولة معلقة</p>
               <p className="text-xs text-[#7B8494]">جميع العمليات السابقة تم تدقيقها بنجاح.</p>
             </div>
@@ -332,11 +485,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
               return (
                 <div
                   key={bk.id}
-                  className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] hover:border-[#1769FF] transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6"
+                  className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] hover:border-[#007AFF] transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-[#245BDB] bg-[#EAF2FF] px-2.5 py-1 rounded-md border border-[#245BDB]/30 font-bold">
+                      <span className="text-xs font-mono text-[#0056B3] bg-[#EAF2FF] px-2.5 py-1 rounded-md border border-[#0056B3]/30 font-bold">
                         {bk.id}
                       </span>
                       <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300">
@@ -345,32 +498,30 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     </div>
 
                     <div className="text-sm font-bold text-[#202633]">
-                      مبلغ العمولة: <strong className="text-[#245BDB] text-base">{bk.commissionAmount.toLocaleString()} ريال</strong>
+                      مبلغ العمولة: <strong className="text-[#0056B3] text-base">{bk.commissionAmount.toLocaleString()} ريال</strong>
                     </div>
 
                     <div className="text-xs text-[#7B8494] space-y-1">
+                      <div>السائق: <strong className="text-[#202633]">{trip?.driverName}</strong> ({trip?.driverPhone})</div>
                       <div>الراكب: <strong className="text-[#202633]">{bk.passengerName}</strong> ({bk.passengerPhone})</div>
-                      <div>البنك: <strong className="text-[#202633]">{bk.paymentBank || 'بنك الكريمي'}</strong></div>
-                      <div>رقم المرجع / الإيصال: <strong className="text-[#202633] font-mono">{bk.paymentRef}</strong></div>
-                      {trip && <div>الرحلة: {trip.fromCity} ← {trip.toCity} (السائق: {trip.driverName})</div>}
+                      <div>البنك: <strong className="text-[#202633]">{bk.paymentBank || 'الكريمي'}</strong> · رقم الحوالة: <strong className="text-[#0056B3] font-mono">{bk.paymentRef}</strong></div>
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => onApproveCommission(bk.id)}
-                      className="px-5 py-3 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs flex items-center gap-2 cursor-pointer shadow-md transition-all"
+                      className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center gap-1.5 shadow-md cursor-pointer transition-all"
                     >
-                      <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-                      <span>اعتماد وتفعيل التواصل ✓</span>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>اعتماد التحقق وتأكيد الحجز</span>
                     </button>
                     <button
                       onClick={() => onRejectCommission(bk.id)}
-                      className="px-4 py-3 rounded-xl bg-[#F5F7FB] hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold cursor-pointer transition-all"
+                      className="px-3.5 py-2.5 rounded-xl bg-[#F5F7FB] text-rose-600 hover:bg-rose-50 border border-rose-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
                     >
                       <XCircle className="w-4 h-4" />
-                      <span>رفض الإيصال</span>
+                      <span>رفض الإشعار</span>
                     </button>
                   </div>
                 </div>
@@ -383,164 +534,93 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {/* TAB 3: DRIVERS VERIFICATION */}
       {activeTab === 'drivers' && (
         <div className="space-y-4">
-          <div className="text-xs text-[#7B8494]">
-            قائمة السائقين والتحقق من الهوية وصور سيارات الهايلكس ورقم اللوحات.
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {drivers.map((drv) => (
               <div
                 key={drv.id}
-                className="p-5 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] shadow-sm space-y-4"
+                className="p-5 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] space-y-4 shadow-sm"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
                       src={drv.photo}
                       alt={drv.name}
-                      referrerPolicy="no-referrer"
-                      className="w-12 h-12 rounded-xl object-cover border border-[#245BDB]/40 shadow-xs"
+                      className="w-12 h-12 rounded-xl object-cover border border-[#DCE4F0]"
                     />
                     <div>
-                      <div className="text-sm font-bold text-[#202633]">{drv.name}</div>
-                      <div className="text-xs text-[#7B8494] font-mono">{drv.phone}</div>
+                      <h4 className="text-sm font-black text-[#202633]">{drv.name}</h4>
+                      <p className="text-xs text-[#7B8494] font-mono">{drv.phone}</p>
                     </div>
                   </div>
 
-                  {drv.verifiedBadge ? (
-                    <span className="text-xs font-bold text-[#245BDB] bg-[#EAF2FF] px-2.5 py-1 rounded-full border border-[#245BDB]/30">
-                      موثّق ✓
-                    </span>
-                  ) : (
-                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-300">
-                      قيد المراجعة
-                    </span>
-                  )}
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                    drv.verifiedBadge
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                      : 'bg-amber-50 text-amber-700 border border-amber-300'
+                  }`}>
+                    {drv.verifiedBadge ? 'موثّق رسمي ✓' : 'قيد المراجعة'}
+                  </span>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-[#F5F7FB] border border-[#DCE4F0] text-xs space-y-1">
-                  <div>السيارة: <strong className="text-[#202633]">{drv.vehicle.model} ({drv.vehicle.color})</strong></div>
-                  <div>رقم اللوحة: <strong className="text-[#202633] font-mono">{drv.vehicle.plateNumber}</strong></div>
-                  <div>الهوية الوطنية: <strong className="text-[#7B8494] font-mono">{drv.nationalIdNumber}</strong></div>
+                <div className="text-xs text-[#7B8494] space-y-1 bg-[#F5F7FB] p-3 rounded-xl border border-[#DCE4F0]">
+                  <div>السيارة: <strong className="text-[#202633]">{drv.vehicle.model} ({drv.vehicle.plateNumber})</strong></div>
+                  <div>المحافظة: {drv.baseCity} · عدد الرحلات المنجزة: {drv.completedTripsCount}</div>
                 </div>
 
-                {!drv.verifiedBadge && (
-                  <div className="flex items-center gap-2 pt-2">
+                <div className="flex items-center gap-2 pt-1">
+                  {!drv.verifiedBadge ? (
                     <button
                       onClick={() => onApproveDriver(drv.id)}
-                      className="flex-1 py-2.5 rounded-xl bg-[#245BDB] hover:bg-[#1769FF] text-white font-black text-xs cursor-pointer shadow-md transition-all"
+                      className="flex-1 py-2 rounded-xl bg-[#0056B3] hover:bg-[#007AFF] text-white text-xs font-bold cursor-pointer"
                     >
-                      قبول وتوثيق السائق ✓
+                      منح شارة التوثيق الرسمية
                     </button>
+                  ) : (
                     <button
                       onClick={() => onRejectDriver(drv.id)}
-                      className="px-3.5 py-2.5 rounded-xl bg-[#F5F7FB] text-rose-600 border border-rose-200 text-xs cursor-pointer"
+                      className="flex-1 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 text-rose-600 text-xs font-bold cursor-pointer"
                     >
-                      رفض
+                      إلغاء التوثيق مؤقتاً
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* TAB 4: SETTINGS & ADVERTISING */}
+      {/* TAB 4: SETTINGS & POLICIES */}
       {activeTab === 'settings' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] border border-[#DCE4F0] shadow-sm space-y-6 max-w-2xl">
-          <h3 className="text-lg font-black text-[#202633] flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#245BDB]" />
-            <span>إعدادات النظام، الإعلانات، وخدمة العملاء</span>
-          </h3>
-
-          {/* Customer Service Phone */}
+        <div className="max-w-2xl space-y-6">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-              <PhoneCall className="w-3.5 h-3.5 text-[#245BDB]" />
-              <span>رقم خدمة العملاء المعتمد (اتصال وواتساب)</span>
-            </label>
+            <label className="text-xs font-bold text-[#202633]">رقم هاتف خدمة العملاء والطوارئ</label>
             <input
               type="text"
               value={settings.customerServicePhone}
               onChange={(e) => onUpdateSettings({ customerServicePhone: e.target.value })}
-              className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-mono font-bold text-sm outline-none text-left focus:border-[#1769FF]"
+              className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-mono font-bold text-sm outline-none focus:border-[#007AFF]"
             />
           </div>
 
-          {/* Commission rate */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-[#245BDB]" />
-              <span>نسبة عمولة منصة وَصْلَة (%)</span>
-            </label>
+            <label className="text-xs font-bold text-[#202633]">نسبة عمولة المنصة (%)</label>
             <input
               type="number"
               value={settings.commissionRatePercent}
               onChange={(e) => onUpdateSettings({ commissionRatePercent: Number(e.target.value) })}
-              className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-mono font-bold text-sm outline-none focus:border-[#1769FF]"
+              className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-mono font-bold text-sm outline-none focus:border-[#007AFF]"
             />
           </div>
 
-          {/* Splash Duration */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#202633] flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#245BDB]" />
-              <span>مدة شاشة البداية Splash Screen (بالثواني)</span>
-            </label>
+            <label className="text-xs font-bold text-[#202633]">شعار التطبيق السلوجان</label>
             <input
-              type="number"
-              step="0.5"
-              min="1.5"
-              max="5"
-              value={settings.splashDurationSeconds}
-              onChange={(e) => onUpdateSettings({ splashDurationSeconds: Number(e.target.value) })}
-              className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-mono font-bold text-sm outline-none focus:border-[#1769FF]"
+              type="text"
+              value={settings.appSlogan}
+              onChange={(e) => onUpdateSettings({ appSlogan: e.target.value })}
+              className="w-full h-11 px-3 rounded-xl bg-[#FFFFFF] border border-[#DCE4F0] text-[#202633] font-bold text-xs outline-none focus:border-[#007AFF]"
             />
-          </div>
-          {/* Legal Compliance & App Store Safety Overview */}
-          <div className="p-5 rounded-2xl bg-[#F5F7FB] border border-[#245BDB]/25 space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold text-[#202633]">
-              <span className="flex items-center gap-1.5 text-[#245BDB]">
-                <ShieldCheck className="w-4 h-4" />
-                <span>الامتثال القانوني ومتطلبات متاجر التطبيقات (Google Play & Apple)</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-[#EAF2FF] text-[#245BDB] text-[10px] font-mono">
-                جاهز للرفع والتضمين
-              </span>
-            </div>
-
-            <p className="text-[11px] text-[#7B8494] leading-relaxed">
-              تم تجهيز السياسات بروابط عامة ثابتة HTTPS وبوابات حذف الحساب المستقلة لتلبية معايير مراجعة التطبيقات:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
-              <a
-                href="/privacy.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-xl bg-white border border-[#DCE4F0] hover:border-[#245BDB] flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <div className="font-bold text-[#202633]">رابط سياسة الخصوصية العام</div>
-                  <div className="text-[10px] text-[#7B8494] font-mono">/privacy.html</div>
-                </div>
-                <FileText className="w-4 h-4 text-[#245BDB]" />
-              </a>
-
-              <a
-                href="/delete-account.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-xl bg-white border border-[#DCE4F0] hover:border-red-500 flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <div className="font-bold text-red-600">بوابة طلب حذف الحساب العامة</div>
-                  <div className="text-[10px] text-[#7B8494] font-mono">/delete-account.html</div>
-                </div>
-                <CheckCircle2 className="w-4 h-4 text-red-500" />
-              </a>
-            </div>
           </div>
         </div>
       )}
